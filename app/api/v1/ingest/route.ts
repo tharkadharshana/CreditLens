@@ -4,14 +4,51 @@ import { IngestPayload } from '@/types'
 import { inferCategory } from '@/lib/utils/categories'
 import { getCurrentStatementPeriod } from '@/lib/utils/statement'
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!  // Use service role to bypass RLS
-)
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url)
+  const apiKey = searchParams.get('api_key')
+
+  if (!apiKey) {
+    return NextResponse.json({ error: 'API key is required' }, { status: 400 })
+  }
+
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  // 1. Validate API key → get user
+  const { data: profile, error: profileError } = await supabaseAdmin
+    .from('profiles')
+    .select('id')
+    .eq('api_key', apiKey)
+    .single()
+
+  if (profileError || !profile) {
+    return NextResponse.json({ error: 'Invalid API key' }, { status: 401 })
+  }
+
+  // 2. Get user's cards
+  const { data: cards, error: cardsError } = await supabaseAdmin
+    .from('credit_cards')
+    .select('id, bank_name, card_name, last_four')
+    .eq('user_id', profile.id)
+
+  if (cardsError) {
+    return NextResponse.json({ error: 'Failed to fetch cards' }, { status: 500 })
+  }
+
+  return NextResponse.json(cards)
+}
 
 export async function POST(request: NextRequest) {
+  const supabaseAdmin = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
   try {
-    const body: IngestPayload = await request.json()
+    const body: IngestPayload = await request.clone().json()
 
     // 1. Validate API key → get user
     const { data: profile, error: profileError } = await supabaseAdmin
@@ -21,10 +58,15 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (profileError || !profile) {
+      await supabaseAdmin.from('ingestion_logs').insert({
+        status: 'error',
+        error_message: 'Invalid API key attempt',
+        raw_payload: body as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      })
       return NextResponse.json({ error: 'Invalid API key' }, { status: 401 })
     }
 
-    // 2. Validate card belongs to user or household
+    // 2. Validate card exists
     const { data: card } = await supabaseAdmin
       .from('credit_cards')
       .select('id, household_id, statement_day')
@@ -35,10 +77,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Card not found' }, { status: 404 })
     }
 
-    // 3. Auto-categorize if category not provided
+    // 3. Auto-categorize
     const category = body.category || inferCategory(body.description, body.merchant || '')
 
-    // 4. Determine statement period
+    // 4. Statement period
     const statementPeriod = getCurrentStatementPeriod(
       body.tx_date ? new Date(body.tx_date) : new Date(),
       card.statement_day
@@ -68,11 +110,25 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (txError) {
+      await supabaseAdmin.from('ingestion_logs').insert({
+        user_id: profile.id,
+        status: 'error',
+        error_message: txError.message,
+        raw_payload: body as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+        merchant: body.merchant,
+        amount: body.amount
+      })
       return NextResponse.json({ error: txError.message }, { status: 500 })
     }
 
-    // 6. Check for budget alerts (fire and forget)
-    checkBudgetAlerts(profile.id, body.card_id, category, supabaseAdmin)
+    // Success log
+    await supabaseAdmin.from('ingestion_logs').insert({
+      user_id: profile.id,
+      status: 'success',
+      raw_payload: body as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      merchant: body.merchant,
+      amount: body.amount
+    })
 
     return NextResponse.json({
       success: true,
@@ -83,46 +139,5 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     console.error('Ingest error:', err)
     return NextResponse.json({ error: 'Server error' }, { status: 500 })
-  }
-}
-
-async function checkBudgetAlerts(
-  userId: string, cardId: string, category: string, supabase: any
-) {
-  // Get active budgets for this category
-  const { data: budgets } = await supabase
-    .from('budgets')
-    .select('*')
-    .eq('user_id', userId)
-    .eq('card_id', cardId)
-    .eq('category', category)
-    .eq('is_active', true)
-
-  for (const budget of budgets || []) {
-    // Calculate current spend in period
-    const startDate = new Date()
-    if (budget.period === 'monthly') startDate.setDate(1)
-    if (budget.period === 'weekly') startDate.setDate(startDate.getDate() - 7)
-
-    const { data: txSum } = await supabase
-      .from('transactions')
-      .select('amount')
-      .eq('card_id', cardId)
-      .eq('category', category)
-      .eq('tx_type', 'debit')
-      .gte('tx_date', startDate.toISOString().split('T')[0])
-
-    const totalSpend = (txSum || []).reduce((sum: number, t: any) => sum + t.amount, 0)
-    const pctUsed = (totalSpend / budget.limit_amount) * 100
-
-    if (pctUsed >= budget.alert_at_pct) {
-      await supabase.from('alerts').insert({
-        user_id: userId,
-        card_id: cardId,
-        alert_type: pctUsed >= 100 ? 'budget_exceeded' : 'limit_near',
-        threshold: budget.limit_amount,
-        message: `${category} budget is ${Math.round(pctUsed)}% used (${totalSpend} / ${budget.limit_amount})`,
-      })
-    }
   }
 }
