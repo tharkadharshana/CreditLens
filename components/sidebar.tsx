@@ -1,31 +1,48 @@
 'use client'
 
+import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   LayoutDashboard, 
   CreditCard, 
-  PieChart, 
-  Settings, 
-  History, 
+  Clock, 
+  List, 
+  Activity, 
   Smartphone,
   LogOut,
-  Target,
-  Activity
+  Settings,
+  LineChart,
+  FileText,
+  Users
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-const navItems = [
+interface NavItemType {
+  label: string
+  href: string
+  icon?: React.ComponentType<{ className?: string }>
+  iconComponent?: React.ComponentType<{ className?: string }>
+}
+
+const mainNav: NavItemType[] = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
   { label: 'Cards', icon: CreditCard, href: '/cards' },
-  { label: 'Budgets', icon: Target, href: '/budgets' },
-  { label: 'Transactions', icon: History, href: '/transactions' },
-  { label: 'Analytics', icon: PieChart, href: '/analytics' },
-  { label: 'Live Feed', icon: Activity, href: '/debug' },
-  { label: 'Shortcut Helper', icon: Smartphone, href: '/setup' },
+  { label: 'Budgets', icon: Clock, href: '/budgets' },
+  { label: 'Transactions', icon: List, href: '/transactions' },
+]
+
+const insightsNav: NavItemType[] = [
+  { label: 'Analytics', icon: LineChart, href: '/analytics' },
+  { label: 'Live Feed', icon: Activity, href: '/livefeed' },
+  { label: 'Statement', icon: FileText, href: '/statement' },
+]
+
+const setupNav: NavItemType[] = [
+  { label: 'Family', icon: Users, href: '/family' },
+  { label: 'Shortcut Helper', iconComponent: Smartphone, href: '/setup' },
 ]
 
 export function Sidebar() {
@@ -38,57 +55,55 @@ export function Sidebar() {
     router.push('/login')
   }
 
+  const NavItem = ({ item }: { item: NavItemType }) => {
+    const isActive = pathname === item.href
+    const Icon = item.iconComponent || item.icon
+    
+    return (
+      <Link 
+        href={item.href}
+        className={cn(
+          "nav-item",
+          isActive && "active"
+        )}
+      >
+        {Icon && <Icon className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />}
+        {item.label}
+        {item.label === 'Transactions' && <span className="nav-badge">3</span>}
+      </Link>
+    )
+  }
+
   return (
-    <div className="w-64 bg-[#11111a] border-r border-[#2d2d3d] flex flex-col h-screen sticky top-0">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-indigo-500 flex items-center gap-2">
-          CreditLens
-        </h1>
-        <p className="text-[10px] text-[#94a3b8] mt-1 font-mono uppercase tracking-widest">
-          Command Centre
-        </p>
+    <aside className="sidebar">
+      <div className="sidebar-logo">
+        <div className="logo-mark">Credit<span>Lens</span></div>
+        <div className="logo-sub">Command Centre</div>
       </div>
-
-      <nav className="flex-1 px-4 space-y-1 mt-4">
-        {navItems.map((item) => {
-          const isActive = pathname === item.href
-          return (
-            <Link 
-              key={item.href} 
-              href={item.href}
-              className={cn(
-                "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all duration-200 group",
-                isActive 
-                  ? "bg-indigo-600/10 text-indigo-400 border border-indigo-600/20 shadow-[0_0_15px_rgba(79,70,229,0.1)]" 
-                  : "text-[#94a3b8] hover:bg-[#1a1a24] hover:text-white"
-              )}
-            >
-              <item.icon className={cn(
-                "w-5 h-5",
-                isActive ? "text-indigo-400" : "group-hover:text-white"
-              )} />
-              {item.label}
-            </Link>
-          )
-        })}
+      <nav className="nav">
+        <div className="nav-section">Main</div>
+        {mainNav.map(item => <NavItem key={item.href} item={item} />)}
+        
+        <div className="nav-section">Insights</div>
+        {insightsNav.map(item => <NavItem key={item.href} item={item} />)}
+        
+        <div className="nav-section">Setup</div>
+        {setupNav.map(item => <NavItem key={item.href} item={item} />)}
       </nav>
-
-      <div className="p-4 border-t border-[#2d2d3d] space-y-2">
-        <Link href="/settings">
-          <Button variant="ghost" className="w-full justify-start text-[#94a3b8] hover:text-white hover:bg-[#1a1a24]">
-            <Settings className="w-5 h-5 mr-3" />
-            Settings
-          </Button>
-        </Link>
-        <Button 
-          variant="ghost" 
-          onClick={handleSignOut}
-          className="w-full justify-start text-red-400/80 hover:text-red-400 hover:bg-red-500/5"
+      
+      <div className="sidebar-footer">
+        <Link 
+          href="/settings"
+          className={cn("nav-item", pathname === '/settings' && "active")}
         >
-          <LogOut className="w-5 h-5 mr-3" />
+          <Settings className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
+          Settings
+        </Link>
+        <div className="nav-item" style={{ color: 'var(--red)' }} onClick={handleSignOut}>
+          <LogOut className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
           Sign Out
-        </Button>
+        </div>
       </div>
-    </div>
+    </aside>
   )
 }

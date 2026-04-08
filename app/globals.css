@@ -4,6 +4,34 @@
 
 @layer base {
   :root {
+    --bg: #0b0b0f;
+    --bg2: #111116;
+    --bg3: #18181f;
+    --bg4: #1f1f28;
+    --border: #2a2a35;
+    --border2: #333340;
+    --text: #f0f0f5;
+    --text2: #9090a8;
+    --text3: #5a5a70;
+    --accent: #7c6cfa;
+    --accent2: #6055d8;
+    --accent-glow: rgba(124, 108, 250, 0.18);
+    --green: #22d3a0;
+    --green-bg: rgba(34, 211, 160, 0.1);
+    --red: #f4566a;
+    --red-bg: rgba(244, 86, 106, 0.1);
+    --amber: #f5a623;
+    --amber-bg: rgba(245, 166, 35, 0.1);
+    --blue: #4a9eff;
+    --blue-bg: rgba(74, 158, 255, 0.1);
+    --card-r: 12px;
+    --r: 8px;
+    --font: var(--font-dm-sans), 'DM Sans', sans-serif;
+    --mono: var(--font-dm-mono), 'DM Mono', monospace;
+    --sidebar: 220px;
+    --topbar: 56px;
+
+    /* Tailwind / Shadcn Compatibility */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
     --card: 240 10% 3.9%;
@@ -16,22 +44,90 @@
     --secondary-foreground: 0 0% 98%;
     --muted: 240 3.7% 15.9%;
     --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
-    --accent-foreground: 240 4.8% 95.9%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 263.4 70% 50.4%;
     --radius: 0.5rem;
   }
-}
 
-@layer base {
   * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground antialiased;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-x: hidden;
+    @apply antialiased;
+  }
+
+  /* Scrollbar override */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+}
+
+@layer components {
+  /* Design system classes from creditlens-ui.html */
+  .shell { display: flex; height: 100vh; overflow: hidden; }
+  
+  .sidebar {
+    width: var(--sidebar); flex-shrink: 0;
+    background: var(--bg2); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 0; z-index: 10;
+  }
+  
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  
+  .topbar {
+    height: var(--topbar); flex-shrink: 0;
+    background: var(--bg2); border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; padding: 0 24px; gap: 12px;
+  }
+
+  .content { flex: 1; overflow-y: auto; padding: 24px; }
+
+  .btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: var(--r); border: 1px solid var(--border2);
+    background: var(--bg3); color: var(--text2); font-family: var(--font); font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn:hover { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); border-color: var(--accent2); color: #fff; }
+  
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-r); overflow: hidden; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .card-title { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .card-body { padding: 20px; }
+
+  .stat-card {
+    background: var(--bg2); border: 1px solid var(--border); border-radius: var(--card-r);
+    padding: 18px 20px; cursor: default; transition: border-color 0.15s; position: relative; overflow: hidden;
+  }
+
+  /* Tx Table classes */
+  .tx-table { width: 100%; border-collapse: collapse; }
+  .tx-table th { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .tx-table td { padding: 11px 12px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
+  
+  /* Additional UI elements as requested */
+  .field {
+    background: var(--bg3); border: 1px solid var(--border); border-radius: var(--r);
+    padding: 9px 12px; color: var(--text); font-family: var(--font); font-size: 13px;
+    outline: none; transition: border-color 0.15s; width: 100%;
   }
 }
+
+/* Utilities */
+.text-muted { color: var(--text3); }
+.fs12 { font-size: 12px; }
+.mono { font-family: var(--mono); }

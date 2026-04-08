@@ -1,19 +1,28 @@
 'use client'
 
-export const dynamic = 'force-dynamic'
-
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Copy, Check, Smartphone, Flame, Search, Code } from 'lucide-react'
+import { Button } from '@/components/ui-creditlens/button'
+import { Input } from '@/components/ui-creditlens/form'
+import { 
+  Copy, 
+  Check, 
+  Smartphone, 
+  Flame, 
+  Search, 
+  Code, 
+  Globe, 
+  ShieldCheck,
+  Zap,
+  Info
+} from 'lucide-react'
 
 export default function SetupPage() {
   const [apiKey, setApiKey] = useState<string>('')
   const [copied, setCopied] = useState<string | null>(null)
   const [appUrl, setAppUrl] = useState<string>('')
-  const [discoveryData, setDiscoveryData] = useState<unknown[] | null>(null)
   const [loadingDiscovery, setLoadingDiscovery] = useState(false)
+  const [discoveryData, setDiscoveryData] = useState<Record<string, unknown> | null>(null)
 
   useEffect(() => {
     const supabase = createClient()
@@ -60,155 +69,152 @@ export default function SetupPage() {
 }`
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 py-6 pb-20">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold flex items-center gap-2 text-white">
-          <Smartphone className="text-indigo-500" />
-          iPhone Shortcut Setup <span className="text-xs bg-indigo-500/10 text-indigo-400 px-2 py-1 rounded ml-2 border border-indigo-500/20 tracking-widest font-black">v1</span>
-        </h1>
-        <p className="text-[#94a3b8]">Automate your credit management with iPhone Shortcuts and API v1</p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* URL Configuration */}
-        <Card className="border-[#2d2d3d] bg-[#1a1a24] text-white">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-indigo-500/20 text-indigo-400 flex items-center justify-center text-xs">1</div>
-              Shortcut Action: Get Contents of URL
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] text-[#64748b] uppercase font-bold tracking-widest">Ingestion Endpoint (v1)</label>
-              <div className="flex gap-2">
-                <code className="flex-1 bg-[#0f0f13] p-2 rounded text-xs border border-[#2d2d3d] truncate text-indigo-300">
-                  {appUrl}/api/v1/ingest
-                </code>
-                <Button size="icon" variant="ghost" className="hover:bg-indigo-500/10" onClick={() => copyToClipboard(`${appUrl}/api/v1/ingest`, 'url')}>
-                  {copied === 'url' ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <label className="text-[10px] text-[#64748b] uppercase font-bold tracking-widest">Method</label>
-              <code className="block bg-[#0f0f13] p-2 rounded text-xs border border-[#2d2d3d] text-white font-bold">POST</code>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Discovery API */}
-        <Card className="border-emerald-500/20 bg-[#1a1a24] text-white">
-          <CardHeader>
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs">2</div>
-              Card Auto-Discovery (v1)
-            </CardTitle>
-            <CardDescription className="text-xs">Use this to find your Card IDs automatically in your shortcut.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-[10px] text-[#64748b] uppercase font-bold tracking-widest">Discovery URL</label>
-              <div className="flex gap-2">
-                <code className="flex-1 bg-[#0f0f13] p-2 rounded text-xs border border-[#2d2d3d] truncate text-emerald-300">
-                  {appUrl}/api/v1/ingest?api_key={apiKey.slice(0, 8)}...
-                </code>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 transition-all gap-2"
-                  onClick={fetchDiscovery}
-                  disabled={loadingDiscovery}
-                >
-                  <Search className="w-3 h-3" />
-                  {loadingDiscovery ? 'Fetching...' : 'Test Discovery'}
-                </Button>
-              </div>
-            </div>
-
-            {discoveryData && (
-              <div className="mt-4 p-3 bg-[#0f0f13] rounded border border-[#2d2d3d] max-h-40 overflow-y-auto">
-                <p className="text-[10px] text-emerald-500 font-bold mb-2 uppercase tracking-tight italic">Response Preview:</p>
-                <pre className="text-[10px] text-[#94a3b8]">
-                  {JSON.stringify(discoveryData, null, 2)}
-                </pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* HTTP Body Configuration */}
-      <Card className="border-[#2d2d3d] bg-[#1a1a24] text-white">
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-bold flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs">3</div>
-              HTTP Body (JSON)
-            </CardTitle>
-            <CardDescription className="text-xs">Copy this logic into your Shortcuts &quot;Dictionary&quot; action.</CardDescription>
-          </div>
-          <Button 
-            size="sm" 
-            variant="ghost" 
-            className="text-indigo-400 hover:bg-indigo-500/10"
-            onClick={() => copyToClipboard(shortcutJson, 'json')}
-          >
-            {copied === 'json' ? <Check className="w-4 h-4 text-emerald-500" /> : <><Copy className="w-4 h-4 mr-2" /> Copy Schema</>}
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="relative">
-            <pre className="bg-[#0f0f13] p-6 rounded-xl text-[11px] border border-[#2d2d3d] overflow-x-auto text-indigo-300 font-mono leading-relaxed">
-              {shortcutJson}
-            </pre>
-          </div>
-          <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-indigo-400">
-                <Code className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Logic: Regex</span>
-              </div>
-              <p className="text-xs text-[#94a3b8]">Extract the <strong>Amount</strong> and <strong>Merchant</strong> from the SMS using Regex.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-emerald-400">
-                <Search className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Logic: Discovery</span>
-              </div>
-              <p className="text-xs text-[#94a3b8]">Call the Discovery URL to find the <strong>card_id</strong> automatically.</p>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-amber-400">
-                <Smartphone className="w-4 h-4" />
-                <span className="text-[10px] font-bold uppercase tracking-widest">Logic: Post</span>
-              </div>
-              <p className="text-xs text-[#94a3b8]">Send everything to the Ingestion Endpoint via POST.</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="bg-indigo-500/5 border border-indigo-500/20 rounded-2xl p-8 text-white relative overflow-hidden group">
-        <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:scale-110 transition-transform duration-500">
-          <Flame className="w-24 h-24 text-indigo-500" />
+    <div className="page active">
+      <div className="page-header-row">
+        <div className="page-header">
+          <div className="page-title">Shortcut Helper</div>
+          <div className="page-sub">Connect your iPhone to automate tracking</div>
         </div>
-        <div className="relative z-10 space-y-4">
-          <h3 className="text-xl font-bold flex items-center gap-2">
-            <Flame className="text-orange-500 w-5 h-5" />
-            Quick Start Tips
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-[#94a3b8]">
-            <ul className="space-y-3 list-disc pl-5">
-              <li>Open <strong>Shortcuts</strong> &gt; <strong>Automation</strong> &gt; <strong>Create Personal Automation</strong>.</li>
-              <li>Select <strong>Message</strong> as the trigger.</li>
-              <li>Filter messages by your bank&apos;s Sender Name.</li>
-            </ul>
-            <ul className="space-y-3 list-disc pl-5">
-              <li>Use the <strong>Get Contents of URL</strong> action for all API calls.</li>
-              <li>Set the &quot;Request Body&quot; to <strong>JSON</strong> and map your variables.</li>
-              <li>Test by sending a manual POST to see it in the <strong>Live Feed</strong>.</li>
-            </ul>
+        <div className="status-badge connected">
+          <span className="pulse"></span> Endpoint Active
+        </div>
+      </div>
+
+      <div className="grid-60-40">
+        <div className="flex flex-col gap-4">
+          {/* API Credentials */}
+          <div className="card">
+            <div className="card-head">
+              <div className="card-title">
+                <ShieldCheck className="w-3.5 h-3.5 text-accent" />
+                API Credentials
+              </div>
+            </div>
+            <div className="card-body flex flex-col gap-4">
+              <div>
+                <label className="text-[10px] text-muted uppercase tracking-widest block mb-1.5">Your Private API Key</label>
+                <div className="flex gap-2">
+                  <Input 
+                    readOnly 
+                    value={apiKey || 'Loading...'} 
+                    type="password"
+                    className="mono text-accent"
+                  />
+                  <Button onClick={() => copyToClipboard(apiKey, 'key')}>
+                    {copied === 'key' ? <Check className="w-3.5 h-3.5 text-green" /> : <Copy className="w-3.5 h-3.5" />}
+                  </Button>
+                </div>
+                <p className="text-[11px] text-muted mt-2 flex items-center gap-1">
+                  <Info className="w-3 h-3" />
+                  Never share this key. It grants full ingestion access.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-[10px] text-muted uppercase tracking-widest block mb-1.5">Ingestion Endpoint (v1)</label>
+                <div className="flex gap-2">
+                  <Input 
+                    readOnly 
+                    value={`${appUrl}/api/v1/ingest`} 
+                    className="text-text2"
+                  />
+                  <Button onClick={() => copyToClipboard(`${appUrl}/api/v1/ingest`, 'url')}>
+                    {copied === 'url' ? <Check className="w-3.5 h-3.5 text-green" /> : <Copy className="w-3.5 h-3.5" />}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Setup Guide */}
+          <div className="card">
+            <div className="card-head">
+              <div className="card-title">
+                <Zap className="w-3.5 h-3.5 text-amber" />
+                Setup Steps
+              </div>
+            </div>
+            <div className="card-body p-0">
+              {[
+                { step: 1, title: 'Create Shortcut', desc: 'Open Shortcuts app and create a new Personal Automation.', icon: Smartphone },
+                { step: 2, title: 'Extract SMS', desc: 'Use Regex to extract Amount and Merchant from the bank SMS.', icon: Code },
+                { step: 3, title: 'Get URL', desc: 'Call the Ingestion endpoint with a POST request.', icon: Globe },
+              ].map((s) => (
+                <div key={s.step} className="flex gap-4 p-4 border-b border-border last:border-0 hover:bg-bg3 transition-all cursor-default group">
+                  <div className="w-8 h-8 rounded-lg bg-bg4 flex items-center justify-center text-accent font-bold text-sm shrink-0 border border-border group-hover:border-accent">
+                    {s.step}
+                  </div>
+                  <div>
+                    <div className="font-semibold text-[13px] flex items-center gap-2">
+                      <s.icon className="w-3 h-3 opacity-50" />
+                      {s.title}
+                    </div>
+                    <p className="text-muted text-[11px] mt-0.5">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {/* JSON Payload */}
+          <div className="card">
+            <div className="card-head">
+              <div className="card-title">
+                <Code className="w-3.5 h-3.5 text-blue" />
+                JSON Payload
+              </div>
+              <Button onClick={() => copyToClipboard(shortcutJson, 'json')}>
+                {copied === 'json' ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              </Button>
+            </div>
+            <div className="card-body p-0">
+              <pre className="p-4 text-[11px] mono text-blue bg-[#0b0b0f] min-h-[160px] overflow-auto">
+                {shortcutJson}
+              </pre>
+            </div>
+          </div>
+
+          {/* Discovery Tool */}
+          <div className="card">
+            <div className="card-head">
+              <div className="card-title">
+                <Search className="w-3.5 h-3.5 text-green" />
+                Auto-Discovery (v1)
+              </div>
+            </div>
+            <div className="card-body flex flex-col gap-3">
+              <p className="text-[11px] text-muted">Use this to fetch all your Card IDs in a single request. Useful for dynamic matching in Shortcuts.</p>
+              <Button 
+                variant="secondary" 
+                className="w-full justify-center gap-2"
+                onClick={fetchDiscovery}
+                disabled={loadingDiscovery}
+              >
+                <Zap className="w-3.5 h-3.5" />
+                {loadingDiscovery ? 'Running...' : 'Run Discovery Test'}
+              </Button>
+              {discoveryData && (
+                <div className="mt-2 p-3 bg-bg3 rounded border border-border max-h-[120px] overflow-auto">
+                  <pre className="text-[10px] mono text-green">
+                    {JSON.stringify(discoveryData, null, 2)}
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card mt-4 bg-accent-glow border-accent/20">
+        <div className="card-body flex items-center gap-4">
+          <div className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shrink-0">
+            <Flame className="w-6 h-6" />
+          </div>
+          <div>
+            <div className="font-bold text-accent">Pro Tip: Local Backups</div>
+            <p className="text-[12px] text-text2">You can also setup Shortcuts to save a copy of every transaction in a local JSON file on your iCloud for redundancy.</p>
           </div>
         </div>
       </div>
