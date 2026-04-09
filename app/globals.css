@@ -1,29 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 240 10% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 240 10% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 263.4 70% 50.4%;
+    color-scheme: dark;
+
+    /* CreditLens Design System - Maps to shadcn HSL variables */
+    --background: 9 9 13;              /* #09090d - main bg */
+    --foreground: 240 10% 95%;         /* #eeeef5 - text */
+    --primary: 249 92% 70%;            /* #7c6cfa - accent purple */
+    --card: 9 9 20;                    /* #111116 - card surface */
+    --border: 240 7% 12%;              /* #1e1e27 - borders */
+    --muted: 240 5% 15%;               /* #18181f - muted bg */
+    --muted-foreground: 240 5% 60%;    /* #9090a8 - muted text */
+
+    /* shadcn required but unused */
+    --card-foreground: 240 10% 95%;
+    --popover: 9 9 20;
+    --popover-foreground: 240 10% 95%;
     --primary-foreground: 210 20% 98%;
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 240 3.7% 15.9%;
-    --muted-foreground: 240 5% 64.9%;
-    --accent: 240 3.7% 15.9%;
+    --accent: 249 92% 70%;
     --accent-foreground: 240 4.8% 95.9%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
-    --ring: 263.4 70% 50.4%;
+    --ring: 249 92% 70%;
     --radius: 0.5rem;
+
+    /* CreditLens Custom Colors (non-shadcn) */
+    --cl-green: #1fd8a4;
+    --cl-red: #f4566a;
+    --cl-amber: #f5a623;
+    --cl-blue: #4a9eff;
+
+    /* Font families */
+    --font-dm-sans: var(--font-dm-sans);
+    --font-dm-mono: var(--font-dm-mono);
+    --font-syne: var(--font-syne);
   }
 }
 
@@ -33,5 +51,17 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: var(--font-dm-sans, sans-serif);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-syne, sans-serif);
+    font-weight: 600;
+  }
+
+  code, pre {
+    font-family: var(--font-dm-mono, monospace);
   }
 }
