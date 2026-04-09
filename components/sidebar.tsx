@@ -96,11 +96,11 @@ export function Sidebar() {
           href="/settings"
           className={cn("nav-item", pathname === '/settings' && "active")}
         >
-          <Settings className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
+          <Settings />
           Settings
         </Link>
         <div className="nav-item" style={{ color: 'var(--red)' }} onClick={handleSignOut}>
-          <LogOut className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
+          <LogOut />
           Sign Out
         </div>
       </div>

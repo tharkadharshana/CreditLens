@@ -36,25 +36,52 @@ export default async function CardsPage() {
           
           return (
             <div key={card.id}>
-              <CreditCardVis 
-                bank={card.bank_name}
-                name={card.card_name}
-                last4={card.last_four}
-                limit={card.credit_limit}
-                balance={card.current_balance || 0}
-                color={card.card_color}
-                network="VISA" // Placeholder, should be in DB
-              />
+              <div 
+                className="credit-card-vis" 
+                style={{ 
+                  background: `linear-gradient(135deg, ${card.card_color} 0%, ${card.card_color}cc 100%)`,
+                  color: '#fff'
+                }}
+              >
+                <div className="cc-top">
+                  <div>
+                    <div className="cc-bank">{card.bank_name}</div>
+                    <div style={{ fontSize: '10px', opacity: 0.7, marginTop: '2px' }}>{card.card_name}</div>
+                  </div>
+                  <div className="cc-network">VISA</div>
+                </div>
+                <div className="cc-number">**** **** **** {card.last_four}</div>
+                <div className="cc-bottom">
+                  <div>
+                    <div className="cc-name">Available</div>
+                    <div style={{ fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: 600 }}>{formatLKR(avail)}</div>
+                  </div>
+                  <div className="flex flex-col items-end">
+                    <div className="font-semibold text-[13px]">{formatLKR(card.credit_limit)}</div>
+                    <div className="text-[10px] opacity-70 uppercase tracking-widest">Limit</div>
+                  </div>
+                </div>
+                <div className="cc-util-bar">
+                  <div 
+                    className="cc-util-fill" 
+                    style={{ 
+                      width: `${pct}%`, 
+                      backgroundColor: pct > 70 ? 'var(--red)' : pct > 40 ? 'var(--amber)' : 'rgba(255,255,255,0.8)' 
+                    }} 
+                  />
+                </div>
+              </div>
+
               <div className="card-item-detail mt-3.5">
                 <div className="card-item-header">
-                  <div className="card-emoji text-xl w-9 h-9 flex items-center justify-center bg-bg4 rounded-lg">💳</div>
+                  <div className="w-9 h-9 flex items-center justify-center bg-bg4 rounded-lg text-lg">💳</div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-[13px]">{card.card_name}</div>
                     <div className="text-[11px] text-muted">{card.bank_name} Bank</div>
                   </div>
                   <span className="status-pill bg-bg4 text-text3">Active</span>
                 </div>
-                <div className="card-stats grid grid-cols-2 gap-2 my-3">
+                <div className="card-stats grid grid-cols-2 gap-2 my-2">
                   <div className="cs-item">
                     <label className="text-[10px] text-muted uppercase tracking-widest">Balance</label>
                     <p className="text-[14px] font-semibold mono text-red">{formatLKR(card.current_balance || 0)}</p>
@@ -76,7 +103,7 @@ export default async function CardsPage() {
                     />
                   </div>
                 </div>
-                <div className="flex gap-2 mt-3">
+                <div className="flex gap-2 mt-2">
                   <Button className="flex-1 justify-center">Manage</Button>
                   <Button className="flex-1 justify-center">Statement</Button>
                 </div>

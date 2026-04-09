@@ -27,8 +27,8 @@ export default async function LiveFeedPage() {
           <div className="page-title">Live Feed</div>
           <div className="page-sub">Real-time stream of incoming transactions</div>
         </div>
-        <div className="flex items-center gap-2 text-[12px] font-bold text-green uppercase tracking-widest pl-3 border-l border-border">
-          <span className="pulse"></span> Live Listening
+        <div className="flex items-center gap-2 text-[11px] font-bold text-green uppercase tracking-widest pl-3 border-l border-border">
+          <span className="w-2 h-2 rounded-full bg-green animate-pulse" /> Live Listening
         </div>
       </div>
 
@@ -38,43 +38,45 @@ export default async function LiveFeedPage() {
             <Activity className="w-3.5 h-3.5 text-accent" />
             Recent Activity
           </div>
-          <div className="text-muted text-[11px] flex items-center gap-1">
+          <div className="text-muted fs11 flex items-center gap-1">
             <Clock className="w-3 h-3" />
             Last updated just now
           </div>
         </div>
         <div className="card-body p-0">
           <div className="flex flex-col">
-            {(transactions as Array<{ id: string; merchant?: string; description: string; source: string; created_at: string; amount: number; tx_type: string; category: string }>)?.map((tx, i) => {
+            {(transactions as any)?.map((tx: any, i: number) => {
               const cat = CATEGORY_CONFIG[tx.category] || CATEGORY_CONFIG.other
               const isNew = i < 2
               
               return (
-                <div key={tx.id} className={cn("flex items-center gap-4 p-4 border-b border-border hover:bg-bg3 transition-all", isNew && "bg-accent-glow/5")}>
-                  <div className="w-10 h-10 rounded-full bg-bg3 border border-border flex items-center justify-center shrink-0 relative">
-                    <Zap className={cn("w-4 h-4", isNew ? "text-accent" : "opacity-30")} />
-                    {isNew && <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-accent rounded-full border-2 border-bg2"></span>}
+                <div key={tx.id} className={cn("flex items-center gap-4 p-4 border-b border-border hover:bg-bg3 transition-all", isNew && "bg-accent/[0.03]")}>
+                  <div className="w-10 h-10 rounded-full bg-bg4 flex items-center justify-center text-lg shrink-0 relative">
+                    {cat.emoji}
+                    {isNew && <span className="absolute top-0 right-0 w-2 h-2 bg-accent rounded-full border-2 border-bg2"></span>}
                   </div>
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-[14px]">{tx.merchant || tx.description}</span>
-                      {isNew && <Badge type="source" className="bg-accent text-white py-0 px-1.5 h-4">NEW</Badge>}
+                      <span className="fw600 fs13">{tx.merchant || tx.description}</span>
+                      {isNew && <span className="cat-badge bg-accent text-white px-1.5 h-4">NEW</span>}
                     </div>
-                    <div className="flex items-center gap-2 text-[11px] text-muted mt-0.5">
-                      <span className="flex items-center gap-1"><Smartphone className="w-2.5 h-2.5" /> via {tx.source}</span>
-                      <span>•</span>
-                      <span>{new Date(tx.created_at).toLocaleTimeString()}</span>
+                    <div className="flex items-center gap-2 text-[10px] text-muted uppercase tracking-wider mt-0.5 font-medium">
+                      <span className="flex items-center gap-1">
+                        {tx.credit_cards?.bank_name} ···{tx.credit_cards?.last_four}
+                      </span>
+                      <span>·</span>
+                      <span>{new Date(tx.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                     </div>
                   </div>
 
                   <div className="flex flex-col items-end gap-1.5">
-                    <div className={`font-bold text-[14px] ${tx.tx_type === 'debit' ? 'text-red' : 'text-green'}`}>
+                    <div className={`tx-amount ${tx.tx_type === 'debit' ? 'debit' : 'credit'}`}>
                       {tx.tx_type === 'debit' ? '-' : '+'}{formatLKR(tx.amount)}
                     </div>
-                    <Badge type="category" style={{ background: `${cat.color}15`, color: cat.color }}>
+                    <span className="cat-badge" style={{ background: `${cat.color}15`, color: cat.color }}>
                       {cat.label}
-                    </Badge>
+                    </span>
                   </div>
                 </div>
               )
@@ -85,7 +87,7 @@ export default async function LiveFeedPage() {
                 <div className="w-16 h-16 rounded-full bg-bg3 flex items-center justify-center border border-dashed border-border text-muted">
                   <Activity className="w-8 h-8 opacity-20" />
                 </div>
-                <p className="text-muted italic text-sm">Waiting for incoming data stream...</p>
+                <p className="text-muted italic fs12">Waiting for incoming data stream...</p>
               </div>
             )}
           </div>

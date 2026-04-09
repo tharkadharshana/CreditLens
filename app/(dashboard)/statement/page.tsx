@@ -39,14 +39,14 @@ export default async function StatementPage() {
         </div>
         <div className="flex gap-2">
           <div className="flex gap-1 bg-bg3 p-1 rounded-lg border border-border">
-            <Button className="px-2 h-7"><ChevronLeft className="w-4 h-4" /></Button>
+            <button className="btn px-2 h-7"><ChevronLeft className="w-4 h-4" /></button>
             <div className="px-3 flex items-center text-[12px] font-bold">{monthName} {currentYear}</div>
-            <Button className="px-2 h-7" disabled><ChevronRight className="w-4 h-4" /></Button>
+            <button className="btn px-2 h-7" disabled><ChevronRight className="w-4 h-4" /></button>
           </div>
-          <Button variant="primary">
+          <button className="btn btn-primary">
             <Download className="w-3.5 h-3.5" />
             Download PDF
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -61,38 +61,38 @@ export default async function StatementPage() {
             </div>
             <div className="card-body">
               <div className="grid grid-cols-2 gap-8 py-4">
-                <div className="statement-stat">
-                  <div className="text-muted text-[11px] uppercase tracking-widest font-bold mb-1">Total Spending</div>
-                  <div className="text-[28px] font-bold text-accent">{formatLKR(totalSpent)}</div>
-                  <div className="text-green text-[11px] mt-1 flex items-center gap-1">
+                <div className="flex flex-col">
+                  <div className="text-muted fs11 uppercase tracking-widest font-bold mb-2">Total Spending</div>
+                  <div className="text-[28px] font-bold text-accent mono">{formatLKR(totalSpent)}</div>
+                  <div className="text-green fs11 mt-2 flex items-center gap-1 font-bold">
                     <TrendingDown className="w-3 h-3" />
                     4.2% lower than last month
                   </div>
                 </div>
-                <div className="statement-stat">
-                  <div className="text-muted text-[11px] uppercase tracking-widest font-bold mb-1">Transaction Volume</div>
-                  <div className="text-[28px] font-bold">{txCount} <span className="text-[14px] text-muted font-normal">items</span></div>
-                  <div className="text-muted text-[11px] mt-1">Processed across {new Set(transactions?.map(tx => tx.card_id)).size} cards</div>
+                <div className="flex flex-col">
+                  <div className="text-muted fs11 uppercase tracking-widest font-bold mb-2">Transaction Volume</div>
+                  <div className="text-[28px] font-bold mono">{txCount} <span className="fs14 text-muted font-normal">items</span></div>
+                  <div className="text-muted fs11 mt-2">{new Set(transactions?.map(tx => tx.card_id)).size} cards processed</div>
                 </div>
               </div>
 
               <div className="border-t border-border mt-6 pt-6">
-                <div className="text-[12px] font-bold uppercase tracking-widest mb-4">Detailed Breakdown</div>
-                <div className="flex flex-col gap-3">
+                <div className="fs12 font-bold uppercase tracking-widest mb-4">Detailed Breakdown</div>
+                <div className="flex flex-col">
                   {Object.entries(CATEGORY_CONFIG).map(([key, cat]) => {
                     const amt = transactions?.filter(tx => tx.category === key).reduce((s, t) => s + t.amount, 0) || 0
                     if (amt === 0) return null
                     const pct = Math.round((amt / totalSpent) * 100)
                     
                     return (
-                      <div key={key} className="flex justify-between items-center py-2 border-b border-border last:border-0 border-dashed">
+                      <div key={key} className="flex justify-between items-center py-3 border-b border-border last:border-0 border-dashed">
                         <div className="flex items-center gap-3">
                           <span className="text-xl">{cat.emoji}</span>
-                          <span className="text-[13px] font-medium">{cat.label}</span>
+                          <span className="fs13 font-medium">{cat.label}</span>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-[13px]">{formatLKR(amt)}</div>
-                          <div className="text-[10px] text-muted">{pct}% of total</div>
+                          <div className="fw600 fs13 mono">{formatLKR(amt)}</div>
+                          <div className="fs11 text-muted">{pct}% of total</div>
                         </div>
                       </div>
                     )
@@ -116,14 +116,14 @@ export default async function StatementPage() {
             </div>
           </div>
           
-          <div className="card bg-bg3 border-dashed">
-            <div className="card-body p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-accent/10 text-accent flex items-center justify-center mx-auto mb-3">
+          <div className="card bg-bg3/50 border-dashed">
+            <div className="card-body p-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-accent/10 text-accent flex items-center justify-center mx-auto mb-4">
                 <FileText className="w-6 h-6" />
               </div>
-              <div className="font-bold text-[14px] mb-1">Full Period Logs</div>
-              <p className="text-[11px] text-muted mb-4">Access raw CSV export for this statement period including all metadata.</p>
-              <Button className="w-full justify-center">Export Full CSV</Button>
+              <div className="fw600 fs14 mb-2">Full Period Logs</div>
+              <p className="fs11 text-muted mb-6 px-4">Access raw CSV export for this statement period including all metadata.</p>
+              <button className="btn w-full justify-center">Export Full CSV</button>
             </div>
           </div>
         </div>

@@ -32,98 +32,100 @@ export default async function TransactionsPage() {
           <div className="page-sub">All spending across all cards</div>
         </div>
         <div className="flex gap-2">
-          <Button>
+          <button className="btn">
             <Plus className="w-3.5 h-3.5" />
             Add Manual
-          </Button>
-          <Button>
+          </button>
+          <button className="btn">
             <Download className="w-3.5 h-3.5" />
             Export CSV
-          </Button>
+          </button>
         </div>
       </div>
 
       <div className="flex gap-2 mb-4">
-        <Input placeholder="Search merchant or description…" className="max-w-[280px]" />
-        <Select className="w-auto">
+        <input placeholder="Search merchant or description…" className="field max-w-[280px]" />
+        <select className="field w-auto">
           <option>All Categories</option>
           {Object.entries(CATEGORY_CONFIG).map(([key, cat]) => (
             <option key={key} value={key}>{cat.label}</option>
           ))}
-        </Select>
-        <Select className="w-auto">
+        </select>
+        <select className="field w-auto">
           <option>All Cards</option>
           <option>HSBC Platinum</option>
           <option>Sampath Visa</option>
-        </Select>
-        <Select className="w-auto">
+        </select>
+        <select className="field w-auto">
           <option>This Month</option>
           <option>Last Month</option>
           <option>Last 3 Months</option>
-        </Select>
+        </select>
       </div>
 
       <div className="card">
-        <table className="tx-table w-full">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Merchant</th>
-              <th>Category</th>
-              <th>Card</th>
-              <th>Source</th>
-              <th style={{ textAlign: 'right' }}>Amount</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions?.map((tx: Transaction & { credit_cards?: { bank_name: string; last_four: string } }) => {
-              const cat = CATEGORY_CONFIG[tx.category] || CATEGORY_CONFIG.other
-              return (
-                <tr key={tx.id}>
-                  <td className="text-muted text-[12px]">
-                    {new Date(tx.tx_date).toLocaleDateString()}
-                  </td>
-                  <td>
-                    <div className="font-semibold text-[13px]">{tx.merchant || tx.description}</div>
-                    <div className="text-muted text-[11px]">{tx.description || 'No description'}</div>
-                  </td>
-                  <td>
-                    <Badge type="category" style={{ background: `${cat.color}15`, color: cat.color }}>
-                      {cat.emoji} {cat.label}
-                    </Badge>
-                  </td>
-                  <td>
-                    <span className="text-muted text-[12px]">
-                      {tx.credit_cards?.bank_name} ···{tx.credit_cards?.last_four}
-                    </span>
-                  </td>
-                  <td>
-                    <Badge type="source">
-                      {tx.source === 'shortcut' ? '📱 Shortcut' : '✋ Manual'}
-                    </Badge>
-                  </td>
-                  <td className={`tx-amount ${tx.tx_type === 'debit' ? 'debit' : 'credit'}`} style={{ textAlign: 'right' }}>
-                    {tx.tx_type === 'debit' ? '-' : '+'}{formatLKR(tx.amount)}
-                  </td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-        
-        <div className="px-5 py-3.5 flex items-center justify-between border-t border-border">
-          <span className="text-muted text-[12px]">
-            Showing {transactions?.length || 0} transactions
-          </span>
-          <div className="flex gap-2">
-            <Button className="px-3">
-              <ChevronLeft className="w-4 h-4" />
-              Prev
-            </Button>
-            <Button className="px-3">
-              Next
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+        <div className="card-body p-0">
+          <table className="tx-table w-full">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Merchant</th>
+                <th>Category</th>
+                <th>Card</th>
+                <th>Source</th>
+                <th style={{ textAlign: 'right' }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transactions?.map((tx: any) => {
+                const cat = CATEGORY_CONFIG[tx.category] || CATEGORY_CONFIG.other
+                return (
+                  <tr key={tx.id}>
+                    <td className="text-muted fs12">
+                      {new Date(tx.tx_date).toLocaleDateString()}
+                    </td>
+                    <td>
+                      <div className="tx-merchant">{tx.merchant || tx.description}</div>
+                      <div className="tx-desc">{tx.description || 'No description'}</div>
+                    </td>
+                    <td>
+                      <span className="cat-badge" style={{ background: `${cat.color}15`, color: cat.color }}>
+                        {cat.emoji} {cat.label}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="text-muted fs12">
+                        {tx.credit_cards?.bank_name} ···{tx.credit_cards?.last_four}
+                      </span>
+                    </td>
+                    <td>
+                      <span className="source-badge">
+                        {tx.source === 'shortcut' ? '📱 Shortcut' : '✋ Manual'}
+                      </span>
+                    </td>
+                    <td className={`tx-amount ${tx.tx_type === 'debit' ? 'debit' : 'credit'}`}>
+                      {tx.tx_type === 'debit' ? '-' : '+'}{formatLKR(tx.amount)}
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+          
+          <div className="px-5 py-3.5 flex items-center justify-between border-t border-border">
+            <span className="text-muted fs12">
+              Showing {transactions?.length || 0} transactions
+            </span>
+            <div className="flex gap-2">
+              <button className="btn px-3">
+                <ChevronLeft className="w-4 h-4" />
+                Prev
+              </button>
+              <button className="btn px-3">
+                Next
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       </div>

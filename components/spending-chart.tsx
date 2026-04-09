@@ -1,65 +1,78 @@
 'use client'
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts'
+import { Transaction } from '@/types'
 import { CATEGORY_CONFIG } from '@/lib/utils/categories'
 
-interface ChartData {
-  name: string
-  value: number
-  color: string
+interface SpendingChartProps {
+  data: Transaction[]
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function SpendingChart({ data }: { data: any[] }) {
-  // Group data by category
-  const grouped = data.reduce((acc: Record<string, number>, tx) => {
-    const cat = tx.category || 'other'
-    acc[cat] = (acc[cat] || 0) + tx.amount
+export function SpendingChart({ data }: SpendingChartProps) {
+  // Group by category
+  const totals = data.reduce((acc, tx) => {
+    acc[tx.category] = (acc[tx.category] || 0) + tx.amount
     return acc
-  }, {})
+  }, {} as Record<string, number>)
 
-  const chartData: ChartData[] = Object.entries(grouped).map(([key, value]) => ({
-    name: CATEGORY_CONFIG[key as keyof typeof CATEGORY_CONFIG]?.label || key,
-    value,
-    color: CATEGORY_CONFIG[key as keyof typeof CATEGORY_CONFIG]?.color || '#94a3b8'
-  }))
+  const total = Object.values(totals).reduce((sum, v) => sum + v, 0)
+  
+  // Convert to sorted array for donut segments
+  const segments = Object.entries(totals)
+    .map(([cat, amount]) => ({
+      cat,
+      amount,
+      pct: (amount / (total || 1)) * 100,
+      color: CATEGORY_CONFIG[cat]?.color || CATEGORY_CONFIG.other.color
+    }))
+    .sort((a, b) => b.amount - a.amount)
 
-  if (chartData.length === 0) {
-    return (
-      <div className="h-[300px] flex items-center justify-center text-[#94a3b8] italic text-sm">
-        No spending data to visualize.
-      </div>
-    )
-  }
+  let currentPct = 0
 
   return (
-    <div className="h-[300px] w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={chartData}
-            cx="50%"
-            cy="50%"
-            innerRadius={60}
-            outerRadius={80}
-            paddingAngle={5}
-            dataKey="value"
-          >
-            {chartData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={entry.color} />
-            ))}
-          </Pie>
-          <Tooltip 
-            contentStyle={{ backgroundColor: '#1a1a24', border: '1px solid #2d2d3d', borderRadius: '8px' }}
-            itemStyle={{ color: '#fff', fontSize: '12px' }}
-          />
-          <Legend 
-            verticalAlign="bottom" 
-            height={36} 
-            formatter={(value) => <span className="text-[10px] text-[#94a3b8] uppercase font-bold tracking-widest">{value}</span>}
-          />
-        </PieChart>
-      </ResponsiveContainer>
+    <div className="donut-wrap">
+      <div style={{ position: 'relative', width: '120px', height: '120px' }}>
+        <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+          {segments.map((seg, i) => {
+            const strokeDasharray = `${seg.pct} 100`
+            const strokeDashoffset = -currentPct
+            currentPct += seg.pct
+            
+            return (
+              <circle
+                key={seg.cat}
+                cx="18"
+                cy="18"
+                r="15.915"
+                fill="transparent"
+                stroke={seg.color}
+                strokeWidth="3.5"
+                strokeDasharray={strokeDasharray}
+                strokeDashoffset={strokeDashoffset}
+              />
+            )
+          })}
+        </svg>
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          textAlign: 'center'
+        }}>
+          <div style={{ fontSize: '10px', color: 'var(--text3)', textTransform: 'uppercase', letterSpacing: '1px' }}>Total</div>
+          <div style={{ fontSize: '14px', fontWeight: 'bold' }}>{Math.round(total / 1000)}k</div>
+        </div>
+      </div>
+
+      <div className="donut-legend">
+        {segments.slice(0, 5).map(seg => (
+          <div key={seg.cat} className="legend-item">
+            <div className="legend-dot" style={{ backgroundColor: seg.color }} />
+            <span style={{ color: 'var(--text2)', flex: 1 }}>{CATEGORY_CONFIG[seg.cat]?.label || seg.cat}</span>
+            <span className="mono" style={{ fontSize: '11px' }}>{Math.round(seg.pct)}%</span>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

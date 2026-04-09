@@ -64,71 +64,59 @@ export default async function BudgetsPage() {
         </Button>
       </div>
 
-      <div className="stat-grid mb-6">
-        <StatCard 
-          variant="blue"
-          label="Total Budget"
-          value={formatLKR(totalBudget)}
-          meta={`${budgets?.length || 0} active categories`}
-          icon={Target}
-        />
-        <StatCard 
-          variant="amber"
-          label="Total Spent"
-          value={formatLKR(totalSpent)}
-          meta="Current month spending"
-          icon={Wallet}
-        />
-        <StatCard 
-          variant={remaining >= 0 ? "green" : "red"}
-          label="Remaining"
-          value={formatLKR(remaining)}
-          meta={remaining >= 0 ? "Budget health is good" : "Over budget!"}
-          icon={AlertCircle}
-        />
+      <div className="stat-grid">
+        <div className="stat-card blue">
+          <div className="stat-label">Total Budget <Target className="w-3 h-3" /></div>
+          <div className="stat-value">{formatLKR(totalBudget)}</div>
+          <div className="stat-meta">{budgets?.length || 0} active categories</div>
+        </div>
+        <div className="stat-card amber">
+          <div className="stat-label">Total Spent <Wallet className="w-3 h-3" /></div>
+          <div className="stat-value">{formatLKR(totalSpent)}</div>
+          <div className="stat-meta">Current month spending</div>
+        </div>
+        <div className="stat-card" style={{ '--card-glow': remaining >= 0 ? 'var(--green-bg)' : 'var(--red-bg)' } as any}>
+          <div className="stat-label">Remaining <AlertCircle className="w-3 h-3" /></div>
+          <div className="stat-value" style={{ color: remaining >= 0 ? 'var(--green)' : 'var(--red)' }}>{formatLKR(remaining)}</div>
+          <div className="stat-meta">{remaining >= 0 ? "Budget health is good" : "Over budget!"}</div>
+        </div>
       </div>
 
       <div className="card">
         <div className="card-head">
           <div className="card-title">Category-wise Breakdown</div>
         </div>
-        <div className="card-body">
-          <div className="flex flex-col gap-6">
+        <div className="card-body p-0">
+          <div className="flex flex-col">
             {budgetsWithSpent.map(budget => {
               const cat = CATEGORY_CONFIG[budget.category] || CATEGORY_CONFIG.other
               const pct = Math.round((budget.spent / budget.limit_amount) * 100)
               const card = cards?.find(c => c.id === budget.card_id)
+              const col = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--amber)' : cat.color
               
               return (
                 <div key={budget.id} className="budget-item">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex gap-3">
-                      <div 
-                        className="w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-bg3 border border-border"
-                        style={{ color: cat.color }}
-                      >
-                        {cat.emoji}
-                      </div>
+                  <div className="budget-header">
+                    <div className="budget-name">
+                      <span className="text-xl">{cat.emoji}</span>
                       <div>
-                        <div className="font-semibold text-[14px]">{cat.label}</div>
-                        <div className="text-[11px] text-muted">
-                          {budget.period} {card ? `on ${card.bank_name}` : 'across all cards'}
+                        <div className="fw600 fs13">{cat.label}</div>
+                        <div className="text-[10px] text-muted uppercase">
+                          {budget.period} {card ? `on ${card.bank_name}` : 'global'}
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-[14px]">{formatLKR(budget.spent)} <span className="text-muted font-normal">/ {formatLKR(budget.limit_amount)}</span></div>
-                      <div className={`text-[11px] font-semibold ${pct > 90 ? 'text-red' : pct > 70 ? 'text-amber' : 'text-green'}`}>
-                        {pct}% utilized
-                      </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div className="fw600 fs13">{formatLKR(budget.spent)} / <span className="text-muted">{formatLKR(budget.limit_amount)}</span></div>
+                      <div className="fs11 fw600" style={{ color: col }}>{pct}% used</div>
                     </div>
                   </div>
-                  <div className="util-bar h-2">
+                  <div className="budget-bar">
                     <div 
-                      className="util-fill" 
+                      className="budget-fill" 
                       style={{ 
                         width: `${Math.min(pct, 100)}%`, 
-                        backgroundColor: pct > 90 ? 'var(--red)' : pct > 70 ? 'var(--amber)' : 'var(--green)' 
+                        backgroundColor: col
                       }} 
                     />
                   </div>
@@ -137,7 +125,7 @@ export default async function BudgetsPage() {
             })}
             
             {budgetsWithSpent.length === 0 && (
-              <div className="text-center py-12 text-muted italic">
+              <div className="text-center py-20 text-muted italic">
                 No active budgets found. Start by adding one!
               </div>
             )}

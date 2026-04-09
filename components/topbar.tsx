@@ -23,17 +23,20 @@ export function Topbar() {
 
   return (
     <header className="topbar">
-      <div className="breadcrumb">Lobby › <span>{pageTitle}</span></div>
+      <div className="breadcrumb">
+        Main / <span>{pageTitle}</span>
+      </div>
+      
       <div className="topbar-right">
-        <Button onClick={() => {}}>
-          <Smartphone className="w-[13px] h-[13px]" />
-          Setup iPhone
-        </Button>
-        <Button variant="primary" onClick={() => {}}>
-          <Plus className="w-[13px] h-[13px]" />
-          Add Card
-        </Button>
-        <div className="avatar">JD</div>
+        <Link href="/cards/new">
+          <button className="btn btn-primary">
+            <Plus className="w-3.5 h-3.5" />
+            Add New Card
+          </button>
+        </Link>
+        <div className="avatar">
+          JD
+        </div>
       </div>
     </header>
   )
