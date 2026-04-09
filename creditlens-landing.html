@@ -1,0 +1,1243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreditLens — Your iPhone. Supercharged.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+:root{
+  --bg:#09090d;
+  --bg2:#0f0f14;
+  --bg3:#151519;
+  --bg4:#1c1c23;
+  --bg5:#222229;
+  --border:#1e1e27;
+  --border2:#2a2a35;
+  --border3:#363645;
+  --text:#eeeef5;
+  --text2:#9898b0;
+  --text3:#55556a;
+  --accent:#7c6cfa;
+  --accent2:#5e4fd4;
+  --accent3:#a394ff;
+  --glow:rgba(124,108,250,0.15);
+  --glow2:rgba(124,108,250,0.08);
+  --green:#1fd8a4;
+  --green2:#0fa37a;
+  --red:#f4566a;
+  --amber:#f5a623;
+  --blue:#4a9eff;
+  --pink:#e879a8;
+  --font-display:'Syne',sans-serif;
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+}
+
+body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;line-height:1.6}
+
+/* ─── NOISE OVERLAY ─── */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  opacity:0.4;
+}
+
+/* ─── NAV ─── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 40px;height:64px;
+  display:flex;align-items:center;gap:40px;
+  background:rgba(9,9,13,0.7);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  transition:background 0.3s;
+}
+.nav-logo{font-family:var(--font-display);font-size:18px;font-weight:700;letter-spacing:-0.5px;color:var(--text);text-decoration:none;flex-shrink:0}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;align-items:center;gap:6px;flex:1;justify-content:center}
+.nav-links a{
+  color:var(--text3);font-size:13.5px;font-weight:400;
+  text-decoration:none;padding:6px 14px;border-radius:8px;
+  transition:color 0.15s,background 0.15s;
+}
+.nav-links a:hover{color:var(--text);background:rgba(255,255,255,0.05)}
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.btn-ghost{
+  background:none;border:1px solid var(--border3);color:var(--text2);
+  padding:7px 16px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.15s;text-decoration:none;display:inline-flex;align-items:center;
+}
+.btn-ghost:hover{border-color:var(--border3);color:var(--text);background:var(--bg4)}
+.btn-primary{
+  background:var(--accent);border:1px solid var(--accent);color:#fff;
+  padding:7px 18px;border-radius:8px;font-family:var(--font);font-size:13px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px;
+  box-shadow:0 0 20px rgba(124,108,250,0.3);
+}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);box-shadow:0 0 32px rgba(124,108,250,0.45);transform:translateY(-1px)}
+.btn-xl{
+  background:var(--accent);border:1px solid var(--accent);color:#fff;
+  padding:14px 28px;border-radius:10px;font-family:var(--font);font-size:15px;font-weight:500;
+  cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+  box-shadow:0 0 40px rgba(124,108,250,0.4),0 4px 20px rgba(0,0,0,0.4);
+}
+.btn-xl:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 0 60px rgba(124,108,250,0.5),0 8px 30px rgba(0,0,0,0.5)}
+.btn-xl-ghost{
+  background:transparent;border:1px solid var(--border3);color:var(--text2);
+  padding:14px 28px;border-radius:10px;font-family:var(--font);font-size:15px;font-weight:400;
+  cursor:pointer;transition:all 0.2s;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+}
+.btn-xl-ghost:hover{border-color:var(--border3);color:var(--text);background:var(--bg4);transform:translateY(-1px)}
+
+/* ─── HERO ─── */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:120px 40px 80px;text-align:center;overflow:hidden;
+}
+
+/* Grid background */
+.hero-grid{
+  position:absolute;inset:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(124,108,250,0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124,108,250,0.04) 1px, transparent 1px);
+  background-size:60px 60px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 0%, black 40%, transparent 100%);
+}
+
+/* Orbs */
+.orb{position:absolute;border-radius:50%;pointer-events:none;filter:blur(80px)}
+.orb-1{width:600px;height:600px;background:radial-gradient(circle,rgba(124,108,250,0.18) 0%,transparent 70%);top:-200px;left:50%;transform:translateX(-50%)}
+.orb-2{width:400px;height:400px;background:radial-gradient(circle,rgba(30,200,150,0.08) 0%,transparent 70%);top:200px;left:-100px}
+.orb-3{width:300px;height:300px;background:radial-gradient(circle,rgba(232,121,168,0.08) 0%,transparent 70%);top:300px;right:-50px}
+
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(124,108,250,0.08);border:1px solid rgba(124,108,250,0.2);
+  color:var(--accent3);font-size:12px;font-weight:500;letter-spacing:0.3px;
+  padding:6px 14px;border-radius:20px;margin-bottom:32px;
+  animation:fadeUp 0.6s ease both;
+}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green);animation:pulse2 2s ease infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:0.5}}
+
+.hero-headline{
+  font-family:var(--font-display);
+  font-size:clamp(44px,7vw,88px);
+  font-weight:800;
+  line-height:1.0;
+  letter-spacing:-3px;
+  margin-bottom:24px;
+  animation:fadeUp 0.6s ease 0.1s both;
+}
+.hero-headline .line1{display:block;color:var(--text)}
+.hero-headline .line2{display:block;
+  background:linear-gradient(135deg, var(--accent3) 0%, var(--accent) 40%, var(--pink) 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+
+.hero-sub{
+  font-size:clamp(16px,2vw,20px);color:var(--text2);font-weight:300;
+  max-width:560px;margin:0 auto 40px;line-height:1.7;
+  animation:fadeUp 0.6s ease 0.2s both;
+}
+
+.hero-cta{
+  display:flex;align-items:center;gap:12px;justify-content:center;flex-wrap:wrap;
+  animation:fadeUp 0.6s ease 0.3s both;margin-bottom:20px;
+}
+.hero-note{
+  font-size:12px;color:var(--text3);
+  animation:fadeUp 0.6s ease 0.4s both;
+  display:flex;align-items:center;gap:16px;
+}
+.hero-note span{display:flex;align-items:center;gap:5px}
+
+/* Dashboard mockup */
+.hero-mockup{
+  position:relative;margin-top:72px;
+  animation:fadeUp 0.8s ease 0.5s both;
+  max-width:1000px;width:100%;
+}
+.mockup-glow{
+  position:absolute;inset:-40px;
+  background:radial-gradient(ellipse 70% 50% at 50% 0%,rgba(124,108,250,0.15) 0%,transparent 70%);
+  pointer-events:none;
+}
+.mockup-frame{
+  border:1px solid var(--border3);border-radius:16px;overflow:hidden;
+  background:var(--bg2);
+  box-shadow:0 0 0 1px rgba(255,255,255,0.03),0 40px 80px rgba(0,0,0,0.6),0 0 60px rgba(124,108,250,0.08);
+  transform:perspective(1200px) rotateX(4deg);
+  transform-origin:bottom center;
+  transition:transform 0.4s ease;
+}
+.mockup-frame:hover{transform:perspective(1200px) rotateX(0deg)}
+.mockup-bar{
+  height:36px;background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 16px;gap:8px;
+}
+.mockup-dot{width:10px;height:10px;border-radius:50%}
+.mockup-url{
+  flex:1;background:var(--bg4);border-radius:6px;height:20px;margin:0 80px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:10px;color:var(--text3);
+}
+.mockup-inner{display:flex;height:480px}
+.mockup-sidebar{width:180px;background:var(--bg2);border-right:1px solid var(--border);padding:12px 8px;flex-shrink:0}
+.mock-logo{padding:8px 12px 12px;font-family:var(--font-display);font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.mock-logo span{color:var(--accent)}
+.mock-nav{display:flex;flex-direction:column;gap:2px}
+.mock-item{height:30px;border-radius:6px;padding:0 10px;display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3)}
+.mock-item.act{background:var(--glow);color:var(--accent);font-weight:500}
+.mock-pip{width:10px;height:10px;border-radius:2px;background:currentColor;opacity:0.6;flex-shrink:0}
+.mockup-main{flex:1;background:var(--bg);padding:20px;overflow:hidden}
+.mock-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.mock-title{font-size:14px;font-weight:600;font-family:var(--font-display)}
+.mock-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.mock-stat{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
+.mock-stat-label{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:4px}
+.mock-stat-val{font-size:16px;font-weight:700;font-family:var(--mono)}
+.mock-stat-sub{font-size:8px;color:var(--text3);margin-top:2px}
+.mock-row{display:grid;grid-template-columns:1.4fr 1fr;gap:10px}
+.mock-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:12px;overflow:hidden}
+.mock-card-head{font-size:9px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.8px}
+.mock-tx{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)}
+.mock-tx:last-child{border-bottom:none}
+.mock-tx-dot{width:20px;height:20px;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px}
+.mock-tx-name{font-size:9px;font-weight:500;flex:1}
+.mock-tx-amt{font-size:9px;font-family:var(--mono);font-weight:600}
+/* Mini chart bars */
+.mock-bars{display:flex;align-items:flex-end;gap:3px;height:60px;margin-top:4px}
+.mock-bar{flex:1;border-radius:2px 2px 0 0;background:var(--accent);opacity:0.7;min-height:4px}
+/* Donut mini */
+.mock-donut{display:flex;align-items:center;gap:12px}
+.mock-legend-item{display:flex;align-items:center;gap:5px;font-size:8px;color:var(--text2);margin-bottom:5px}
+.mock-legend-dot{width:6px;height:6px;border-radius:50%}
+/* Animated cards */
+.mock-cc{border-radius:8px;padding:12px;margin-bottom:8px;position:relative;overflow:hidden}
+.mock-cc-bank{font-size:8px;font-weight:600;opacity:0.9}
+.mock-cc-num{font-family:var(--mono);font-size:8px;opacity:0.6;margin:8px 0 4px;letter-spacing:1px}
+.mock-cc-bar{height:2px;background:rgba(255,255,255,0.2);border-radius:1px;margin-top:8px}
+.mock-cc-fill{height:100%;border-radius:1px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── SECTION SHARED ─── */
+section{position:relative;z-index:1}
+.container{max-width:1120px;margin:0 auto;padding:0 40px}
+.section-label{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent);margin-bottom:16px;
+}
+.section-label::before{content:'';width:20px;height:1px;background:var(--accent)}
+.section-title{
+  font-family:var(--font-display);
+  font-size:clamp(32px,4vw,52px);
+  font-weight:700;letter-spacing:-1.5px;line-height:1.1;
+  margin-bottom:16px;
+}
+.section-sub{
+  font-size:17px;color:var(--text2);font-weight:300;line-height:1.7;
+  max-width:540px;
+}
+
+/* ─── LOGOS STRIP ─── */
+.logos-section{padding:60px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.logos-label{text-align:center;font-size:12px;color:var(--text3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:32px}
+.logos-strip{display:flex;align-items:center;justify-content:center;gap:56px;flex-wrap:wrap}
+.logo-item{
+  font-family:var(--font-display);font-size:15px;font-weight:700;
+  color:var(--text3);letter-spacing:-0.5px;opacity:0.4;
+  transition:opacity 0.2s;cursor:default;
+}
+.logo-item:hover{opacity:0.8}
+
+/* ─── FEATURES ─── */
+.features-section{padding:120px 0}
+.features-header{margin-bottom:72px}
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.feature-card{
+  background:var(--bg2);padding:36px 32px;
+  transition:background 0.2s;position:relative;overflow:hidden;
+}
+.feature-card::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,var(--glow2) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.3s;
+}
+.feature-card:hover{background:var(--bg3)}
+.feature-card:hover::after{opacity:1}
+.feature-icon{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--bg4);border:1px solid var(--border3);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;font-size:20px;
+  position:relative;z-index:1;
+}
+.feature-title{font-family:var(--font-display);font-size:17px;font-weight:600;letter-spacing:-0.3px;margin-bottom:10px;position:relative;z-index:1}
+.feature-desc{font-size:14px;color:var(--text2);line-height:1.65;position:relative;z-index:1}
+.feature-tag{
+  display:inline-block;margin-top:14px;font-size:10px;font-weight:600;
+  letter-spacing:0.5px;padding:3px 8px;border-radius:4px;position:relative;z-index:1;
+}
+.feat-coming{background:rgba(245,166,35,0.1);color:var(--amber)}
+.feat-live{background:rgba(31,216,164,0.1);color:var(--green)}
+
+/* ─── HOW IT WORKS ─── */
+.how-section{padding:120px 0;background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 50%,var(--bg) 100%)}
+.how-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.steps{display:flex;flex-direction:column;gap:0}
+.step{
+  display:flex;gap:20px;padding:28px 0;
+  border-bottom:1px solid var(--border);cursor:pointer;
+  transition:all 0.2s;
+}
+.step:first-child{padding-top:0}
+.step:last-child{border-bottom:none}
+.step-num{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--bg4);border:1px solid var(--border3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;font-weight:500;color:var(--text3);
+  flex-shrink:0;margin-top:2px;transition:all 0.2s;
+}
+.step.active .step-num{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 0 20px rgba(124,108,250,0.4)}
+.step-content h4{font-family:var(--font-display);font-size:17px;font-weight:600;margin-bottom:6px;color:var(--text2);transition:color 0.2s}
+.step.active .step-content h4{color:var(--text)}
+.step-content p{font-size:14px;color:var(--text3);line-height:1.65;transition:color 0.2s}
+.step.active .step-content p{color:var(--text2)}
+.how-visual{
+  position:sticky;top:100px;
+  background:var(--bg3);border:1px solid var(--border2);border-radius:16px;
+  overflow:hidden;aspect-ratio:1/1.1;
+  display:flex;align-items:center;justify-content:center;
+}
+.visual-panel{
+  width:100%;height:100%;padding:32px;
+  display:none;flex-direction:column;gap:16px;
+}
+.visual-panel.active{display:flex;animation:fadeIn2 0.3s ease}
+@keyframes fadeIn2{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* Phone mockup for step 1 */
+.phone-mock{
+  width:180px;margin:0 auto;
+  background:var(--bg4);border:2px solid var(--border3);border-radius:24px;
+  padding:12px;
+}
+.phone-notch{width:60px;height:6px;background:var(--border3);border-radius:3px;margin:0 auto 12px}
+.phone-screen{background:var(--bg);border-radius:12px;padding:12px;min-height:200px}
+.phone-shortcut-item{
+  display:flex;align-items:center;gap:8px;padding:8px;
+  background:var(--bg3);border-radius:8px;margin-bottom:6px;
+  border:1px solid var(--border2);
+}
+.shortcut-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:12px}
+.shortcut-name{font-size:10px;font-weight:500}
+.shortcut-desc{font-size:8px;color:var(--text3);margin-top:1px}
+
+/* API response mockup for step 2 */
+.api-block{
+  background:var(--bg);border:1px solid var(--border2);border-radius:10px;padding:16px;
+  font-family:var(--mono);font-size:11px;line-height:1.8;flex:1;
+}
+.json-key{color:#9cdcfe}.json-str{color:#ce9178}.json-num{color:#b5cea8}.json-bool{color:#569cd6}
+.json-brace{color:var(--text2)}
+
+/* ─── PLATFORM ─── */
+.platform-section{padding:120px 0}
+.platform-header{text-align:center;margin-bottom:72px}
+.platform-header .section-sub{margin:0 auto}
+.platform-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:60px}
+.platform-item{
+  background:var(--bg2);border:1px solid var(--border);border-radius:12px;
+  padding:24px 20px;text-align:center;transition:all 0.2s;position:relative;overflow:hidden;
+}
+.platform-item::before{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--item-color,var(--accent)),transparent);
+  transform:scaleX(0);transition:transform 0.3s;
+}
+.platform-item:hover{border-color:var(--border3);transform:translateY(-3px)}
+.platform-item:hover::before{transform:scaleX(1)}
+.platform-icon{font-size:28px;margin-bottom:14px}
+.platform-name{font-family:var(--font-display);font-size:14px;font-weight:600;margin-bottom:6px}
+.platform-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.platform-status{
+  display:inline-block;margin-top:10px;font-size:9px;font-weight:600;
+  letter-spacing:0.5px;padding:2px 7px;border-radius:3px;
+}
+
+/* Future timeline */
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.timeline-item{background:var(--bg2);padding:28px 24px}
+.tl-phase{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.tl-title{font-family:var(--font-display);font-size:16px;font-weight:600;margin-bottom:8px}
+.tl-items{list-style:none;display:flex;flex-direction:column;gap:6px}
+.tl-items li{font-size:12px;color:var(--text2);display:flex;align-items:center;gap:7px}
+.tl-items li::before{content:'→';color:var(--accent);font-size:11px;flex-shrink:0}
+
+/* ─── STATS ─── */
+.stats-section{padding:80px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--bg2)}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
+.stat-item{padding:32px;border-right:1px solid var(--border)}
+.stat-item:last-child{border-right:none}
+.stat-num{font-family:var(--font-display);font-size:44px;font-weight:800;letter-spacing:-2px;color:var(--text)}
+.stat-unit{font-size:20px;color:var(--accent)}
+.stat-desc{font-size:13px;color:var(--text3);margin-top:4px}
+
+/* ─── TESTIMONIALS ─── */
+.testimonials-section{padding:120px 0}
+.testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.testimonial{
+  background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:28px;display:flex;flex-direction:column;gap:20px;
+  transition:border-color 0.2s;
+}
+.testimonial:hover{border-color:var(--border3)}
+.testimonial-quote{font-size:15px;color:var(--text2);line-height:1.7;font-style:italic;flex:1}
+.testimonial-quote::before{content:'"';font-family:var(--font-display);font-size:40px;color:var(--accent);line-height:0;vertical-align:-18px;opacity:0.4}
+.testimonial-author{display:flex;align-items:center;gap:12px}
+.author-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.author-name{font-size:13px;font-weight:600}
+.author-role{font-size:11px;color:var(--text3)}
+.stars{color:var(--amber);font-size:11px;letter-spacing:1px}
+
+/* ─── PRICING ─── */
+.pricing-section{padding:120px 0}
+.pricing-header{text-align:center;margin-bottom:60px}
+.pricing-toggle{
+  display:inline-flex;gap:4px;background:var(--bg3);
+  border:1px solid var(--border2);border-radius:10px;padding:4px;
+  margin-bottom:48px;
+}
+.ptab{padding:7px 20px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;color:var(--text3);transition:all 0.15s}
+.ptab.active{background:var(--bg2);color:var(--text)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px;margin:0 auto}
+.pricing-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  padding:32px;position:relative;transition:all 0.2s;
+}
+.pricing-card:hover{transform:translateY(-4px)}
+.pricing-card.featured{
+  border-color:var(--accent);
+  box-shadow:0 0 40px rgba(124,108,250,0.15);
+}
+.pricing-card.featured::before{
+  content:'Most Popular';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:var(--accent);color:#fff;font-size:10px;font-weight:700;letter-spacing:0.5px;
+  padding:4px 14px;border-radius:20px;white-space:nowrap;
+}
+.plan-name{font-family:var(--font-display);font-size:14px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+.plan-price{font-family:var(--font-display);font-size:48px;font-weight:800;letter-spacing:-2px;line-height:1;margin-bottom:4px}
+.plan-price sup{font-size:20px;vertical-align:top;margin-top:10px;display:inline-block;font-weight:500}
+.plan-period{font-size:13px;color:var(--text3);margin-bottom:28px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.plan-features li{font-size:13px;color:var(--text2);display:flex;align-items:center;gap:10px}
+.check{width:16px;height:16px;border-radius:50%;background:rgba(31,216,164,0.15);color:var(--green);display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0}
+.plan-cta{width:100%;padding:12px;border-radius:8px;font-family:var(--font);font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s}
+.plan-cta-outline{background:none;border:1px solid var(--border3);color:var(--text2)}
+.plan-cta-outline:hover{border-color:var(--accent);color:var(--accent)}
+.plan-cta-fill{background:var(--accent);border:1px solid var(--accent);color:#fff;box-shadow:0 0 20px rgba(124,108,250,0.3)}
+.plan-cta-fill:hover{background:var(--accent2)}
+
+/* ─── CTA FINAL ─── */
+.cta-section{
+  padding:140px 40px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:600px;border-radius:50%;
+  background:radial-gradient(circle,rgba(124,108,250,0.12) 0%,transparent 70%);
+  pointer-events:none;
+}
+.cta-headline{
+  font-family:var(--font-display);font-size:clamp(36px,5vw,68px);
+  font-weight:800;letter-spacing:-2px;line-height:1.05;margin-bottom:20px;
+}
+.cta-sub{font-size:17px;color:var(--text2);font-weight:300;margin-bottom:40px;max-width:480px;margin-left:auto;margin-right:auto}
+
+/* ─── FOOTER ─── */
+footer{
+  border-top:1px solid var(--border);
+  padding:60px 40px 40px;background:var(--bg2);
+}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:60px;max-width:1120px;margin:0 auto 60px}
+.footer-brand .logo{font-family:var(--font-display);font-size:18px;font-weight:700;color:var(--text);margin-bottom:12px}
+.footer-brand .logo span{color:var(--accent)}
+.footer-brand p{font-size:13px;color:var(--text3);line-height:1.6;max-width:240px}
+.footer-col h5{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:16px}
+.footer-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.footer-col li a{font-size:13px;color:var(--text3);text-decoration:none;transition:color 0.15s}
+.footer-col li a:hover{color:var(--text)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:28px;border-top:1px solid var(--border);max-width:1120px;margin:0 auto;font-size:12px;color:var(--text3)}
+.footer-bottom a{color:var(--text3);text-decoration:none}
+.footer-social{display:flex;gap:12px}
+.social-btn{
+  width:32px;height:32px;border-radius:8px;background:var(--bg3);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;color:var(--text3);
+  text-decoration:none;font-size:13px;transition:all 0.15s;
+}
+.social-btn:hover{border-color:var(--border3);color:var(--text);background:var(--bg4)}
+
+/* ─── SCROLL ANIMATIONS ─── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 0.6s ease,transform 0.6s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal-d1{transition-delay:0.1s}.reveal-d2{transition-delay:0.2s}.reveal-d3{transition-delay:0.3s}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  nav{padding:0 24px}
+  .nav-links{display:none}
+  .hero{padding:100px 24px 60px}
+  .container{padding:0 24px}
+  .features-grid{grid-template-columns:1fr 1fr}
+  .platform-grid{grid-template-columns:repeat(2,1fr)}
+  .how-grid{grid-template-columns:1fr}
+  .how-visual{display:none}
+  .stats-grid{grid-template-columns:repeat(2,1fr)}
+  .testimonials-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .pricing-card.featured{order:-1}
+  .footer-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .timeline{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  .features-grid{grid-template-columns:1fr}
+  .platform-grid{grid-template-columns:1fr 1fr}
+  .stats-grid{grid-template-columns:1fr 1fr}
+  .hero-mockup{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ NAV ═══════════ -->
+<nav>
+  <a href="#" class="nav-logo">Credit<span>Lens</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#platform">Platform</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#docs">Docs</a>
+    <a href="#changelog">Changelog</a>
+  </div>
+  <div class="nav-right">
+    <a href="#" class="btn-ghost">Sign in</a>
+    <a href="#" class="btn-primary">
+      Get started free
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+  </div>
+</nav>
+
+<!-- ═══════════ HERO ═══════════ -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-badge">
+    <div class="badge-dot"></div>
+    Now in public beta · iPhone Shortcuts integration live
+  </div>
+
+  <h1 class="hero-headline">
+    <span class="line1">Your iPhone.</span>
+    <span class="line2">Supercharged.</span>
+  </h1>
+
+  <p class="hero-sub">
+    CreditLens connects iPhone Shortcuts to a powerful command centre. Start with credit card tracking — grow into a complete personal automation platform.
+  </p>
+
+  <div class="hero-cta">
+    <a href="#" class="btn-xl">
+      Start for free
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+    <a href="#" class="btn-xl-ghost">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+      Watch demo
+    </a>
+  </div>
+
+  <div class="hero-note">
+    <span>✓ Free forever tier</span>
+    <span>✓ No credit card required</span>
+    <span>✓ 2-minute iPhone setup</span>
+  </div>
+
+  <!-- DASHBOARD MOCKUP -->
+  <div class="hero-mockup">
+    <div class="mockup-glow"></div>
+    <div class="mockup-frame">
+      <div class="mockup-bar">
+        <div class="mockup-dot" style="background:#ff5f56"></div>
+        <div class="mockup-dot" style="background:#ffbd2e"></div>
+        <div class="mockup-dot" style="background:#27c93f"></div>
+        <div class="mockup-url">app.creditlens.io/dashboard</div>
+      </div>
+      <div class="mockup-inner">
+        <!-- Sidebar -->
+        <div class="mockup-sidebar">
+          <div class="mock-logo">Credit<span>Lens</span></div>
+          <div class="mock-nav">
+            <div class="mock-item act"><div class="mock-pip"></div>Dashboard</div>
+            <div class="mock-item"><div class="mock-pip"></div>Cards</div>
+            <div class="mock-item"><div class="mock-pip"></div>Budgets</div>
+            <div class="mock-item"><div class="mock-pip"></div>Transactions</div>
+            <div class="mock-item"><div class="mock-pip" style="background:#7c6cfa"></div>Analytics</div>
+            <div class="mock-item"><div class="mock-pip"></div>Live Feed</div>
+            <div class="mock-item"><div class="mock-pip"></div>Shortcuts</div>
+          </div>
+        </div>
+        <!-- Main area -->
+        <div class="mockup-main">
+          <div class="mock-header">
+            <div class="mock-title">Command Centre</div>
+            <div style="display:flex;gap:6px">
+              <div style="height:20px;width:70px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;display:flex;align-items:center;padding:0 8px;font-size:8px;color:var(--text3)">Setup iPhone</div>
+              <div style="height:20px;width:60px;background:var(--accent);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff">+ Add Card</div>
+            </div>
+          </div>
+          <div class="mock-stats">
+            <div class="mock-stat"><div class="mock-stat-label">Available Credit</div><div class="mock-stat-val" style="color:#1fd8a4;font-size:13px">241,350</div><div class="mock-stat-sub">LKR · 61% avail</div></div>
+            <div class="mock-stat"><div class="mock-stat-label">Monthly Spend</div><div class="mock-stat-val" style="color:#f5a623;font-size:13px">58,450</div><div class="mock-stat-sub">LKR · this period</div></div>
+            <div class="mock-stat"><div class="mock-stat-label">Daily Avg</div><div class="mock-stat-val" style="color:#4a9eff;font-size:13px">1,948</div><div class="mock-stat-sub">LKR · 30 days</div></div>
+            <div class="mock-stat"><div class="mock-stat-label">Outstanding</div><div class="mock-stat-val" style="color:#f4566a;font-size:13px">151,650</div><div class="mock-stat-sub">LKR · 3 cards</div></div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-card">
+              <div class="mock-card-head">Recent Transactions</div>
+              <div class="mock-tx"><div class="mock-tx-dot" style="background:rgba(249,115,22,0.15)">🍔</div><div class="mock-tx-name">Pizza Hut<div style="font-size:7px;color:var(--text3)">via Shortcut · food</div></div><div class="mock-tx-amt" style="color:#f4566a">-2,850</div></div>
+              <div class="mock-tx"><div class="mock-tx-dot" style="background:rgba(59,130,246,0.15)">🚗</div><div class="mock-tx-name">PickMe<div style="font-size:7px;color:var(--text3)">via Shortcut · transport</div></div><div class="mock-tx-amt" style="color:#f4566a">-1,200</div></div>
+              <div class="mock-tx"><div class="mock-tx-dot" style="background:rgba(139,92,246,0.15)">🛍️</div><div class="mock-tx-name">Keells Super<div style="font-size:7px;color:var(--text3)">manual · shopping</div></div><div class="mock-tx-amt" style="color:#f4566a">-4,320</div></div>
+              <div class="mock-tx"><div class="mock-tx-dot" style="background:rgba(31,216,164,0.15)">💰</div><div class="mock-tx-name">HSBC Payment<div style="font-size:7px;color:var(--text3)">manual · payment</div></div><div class="mock-tx-amt" style="color:#1fd8a4">+15,000</div></div>
+              <div style="margin-top:8px">
+                <div class="mock-card-head" style="margin-bottom:6px">30-Day Trend</div>
+                <div class="mock-bars">
+                  <div class="mock-bar" style="height:30%"></div><div class="mock-bar" style="height:60%"></div><div class="mock-bar" style="height:25%"></div>
+                  <div class="mock-bar" style="height:75%"></div><div class="mock-bar" style="height:40%"></div><div class="mock-bar" style="height:85%"></div>
+                  <div class="mock-bar" style="height:50%"></div><div class="mock-bar" style="height:70%"></div><div class="mock-bar" style="height:35%"></div>
+                  <div class="mock-bar" style="height:90%"></div><div class="mock-bar" style="height:55%"></div><div class="mock-bar" style="height:100%"></div>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div class="mock-card">
+                <div class="mock-card-head">Spend Mix</div>
+                <div class="mock-donut">
+                  <svg width="50" height="50" viewBox="0 0 50 50">
+                    <circle cx="25" cy="25" r="18" fill="none" stroke="var(--bg4)" stroke-width="8"/>
+                    <circle cx="25" cy="25" r="18" fill="none" stroke="#f97316" stroke-width="8" stroke-dasharray="34 79" stroke-dashoffset="0" transform="rotate(-90 25 25)"/>
+                    <circle cx="25" cy="25" r="18" fill="none" stroke="#3b82f6" stroke-width="8" stroke-dasharray="24 79" stroke-dashoffset="-34" transform="rotate(-90 25 25)"/>
+                    <circle cx="25" cy="25" r="18" fill="none" stroke="#8b5cf6" stroke-width="8" stroke-dasharray="14 79" stroke-dashoffset="-58" transform="rotate(-90 25 25)"/>
+                    <circle cx="25" cy="25" r="18" fill="none" stroke="#22d3a0" stroke-width="8" stroke-dasharray="7 79" stroke-dashoffset="-72" transform="rotate(-90 25 25)"/>
+                  </svg>
+                  <div>
+                    <div class="mock-legend-item"><div class="mock-legend-dot" style="background:#f97316"></div>Food 43%</div>
+                    <div class="mock-legend-item"><div class="mock-legend-dot" style="background:#3b82f6"></div>Transport 31%</div>
+                    <div class="mock-legend-item"><div class="mock-legend-dot" style="background:#8b5cf6"></div>Shopping 18%</div>
+                  </div>
+                </div>
+              </div>
+              <div class="mock-card">
+                <div class="mock-card-head">Your Cards</div>
+                <div class="mock-cc" style="background:linear-gradient(135deg,#0f3460,#533483)">
+                  <div class="mock-cc-bank" style="color:#fff">HSBC Platinum</div>
+                  <div class="mock-cc-num" style="color:rgba(255,255,255,0.6)">**** **** **** 4521</div>
+                  <div style="display:flex;justify-content:space-between;font-size:7px;color:rgba(255,255,255,0.6)"><span>Available: 91,350</span><span>39%</span></div>
+                  <div class="mock-cc-bar"><div class="mock-cc-fill" style="width:39%;background:#f5a623"></div></div>
+                </div>
+                <div class="mock-cc" style="background:linear-gradient(135deg,#134e4a,#065f46)">
+                  <div class="mock-cc-bank" style="color:#fff">Sampath World MC</div>
+                  <div class="mock-cc-num" style="color:rgba(255,255,255,0.6)">**** **** **** 8832</div>
+                  <div style="display:flex;justify-content:space-between;font-size:7px;color:rgba(255,255,255,0.6)"><span>Available: 27,600</span><span>72%</span></div>
+                  <div class="mock-cc-bar"><div class="mock-cc-fill" style="width:72%;background:#f4566a"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ LOGOS ═══════════ -->
+<div class="logos-section">
+  <div class="container">
+    <div class="logos-label">Trusted by users across</div>
+    <div class="logos-strip">
+      <div class="logo-item">HSBC</div>
+      <div class="logo-item">Sampath Bank</div>
+      <div class="logo-item">Commercial Bank</div>
+      <div class="logo-item">BOC</div>
+      <div class="logo-item">Nations Trust</div>
+      <div class="logo-item">HNB</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ FEATURES ═══════════ -->
+<section class="features-section" id="features">
+  <div class="container">
+    <div class="features-header reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything your wallet needs.<br>Nothing it doesn't.</h2>
+      <p class="section-sub">Built for power users who want real control — not another app that just shows you a graph.</p>
+    </div>
+    <div class="features-grid reveal">
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">iPhone Shortcuts Native</div>
+        <div class="feature-desc">Tap once on your home screen to log a transaction. Our REST API accepts Shortcut data with a single POST — no app switching, no friction.</div>
+        <span class="feature-tag feat-live">Live now</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🃏</div>
+        <div class="feature-title">Multi-Card Command Centre</div>
+        <div class="feature-desc">Every card in one view. Utilization rings, due date countdowns, statement cycles, available credit — all at a glance across every bank.</div>
+        <span class="feature-tag feat-live">Live now</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Auto-Categorisation</div>
+        <div class="feature-desc">Merchant names are intelligently matched to categories. Pizza Hut becomes food, PickMe becomes transport — automatically, every time.</div>
+        <span class="feature-tag feat-live">Live now</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">👨‍👩‍👧</div>
+        <div class="feature-title">Family Finance Hub</div>
+        <div class="feature-desc">Invite household members with granular roles. See who spent what, share cards selectively, and manage the whole family's credit from one account.</div>
+        <span class="feature-tag feat-live">Live now</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Smart Budget Alerts</div>
+        <div class="feature-desc">Set per-category, per-card budgets. Get alerted the moment you hit 80% — before you overspend, not after. Triggered in real-time via Shortcuts.</div>
+        <span class="feature-tag feat-live">Live now</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <div class="feature-title">Live Statement View</div>
+        <div class="feature-desc">See your exact statement balance right now — not end of month. Opening balance, current spend, minimum due, available credit — always live.</div>
+        <span class="feature-tag feat-live">Live now</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Spend Insights</div>
+        <div class="feature-desc">Monthly AI-generated summaries of your patterns. "You spent 34% more on dining this month. Here's why and how to fix it."</div>
+        <span class="feature-tag feat-coming">Coming Q3 2025</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔁</div>
+        <div class="feature-title">Recurring Detection</div>
+        <div class="feature-desc">Subscriptions and recurring charges are automatically flagged so you always know what's coming before the statement does.</div>
+        <span class="feature-tag feat-coming">Coming Q3 2025</span>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <div class="feature-title">Open Shortcut Platform</div>
+        <div class="feature-desc">Beyond finance — any iPhone Shortcut can push data to CreditLens. Health, habits, home automation, productivity. The platform grows with you.</div>
+        <span class="feature-tag feat-coming">Coming Q4 2025</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ HOW IT WORKS ═══════════ -->
+<section class="how-section" id="how">
+  <div class="container">
+    <div class="how-grid">
+      <div>
+        <div class="section-label reveal">How It Works</div>
+        <h2 class="section-title reveal">From tap to<br>tracked in seconds.</h2>
+        <div class="steps">
+          <div class="step active" onclick="setStep(0)">
+            <div class="step-num">01</div>
+            <div class="step-content">
+              <h4>Add your cards</h4>
+              <p>Enter your card details — bank, limit, statement day, due date. Takes 60 seconds per card. No bank login required, ever.</p>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(1)">
+            <div class="step-num">02</div>
+            <div class="step-content">
+              <h4>Copy your API key</h4>
+              <p>One click to copy your unique key from Settings. This authenticates your iPhone Shortcuts without any login flow.</p>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(2)">
+            <div class="step-num">03</div>
+            <div class="step-content">
+              <h4>Set up the Shortcut</h4>
+              <p>Our Shortcut Helper walks you through every step. Paste your API key + card ID, add it to your home screen. Done in under 2 minutes.</p>
+            </div>
+          </div>
+          <div class="step" onclick="setStep(3)">
+            <div class="step-num">04</div>
+            <div class="step-content">
+              <h4>Tap. Log. Done.</h4>
+              <p>Every time you spend, tap your Shortcut. Enter the amount and merchant. CreditLens receives it instantly, updates your balance, and checks your budgets.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="how-visual" id="how-visual">
+        <!-- Step 0: Phone with shortcut -->
+        <div class="visual-panel active" id="vpanel-0">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Your cards in CreditLens</div>
+          <div style="display:flex;flex-direction:column;gap:10px;padding:4px">
+            <div style="background:linear-gradient(135deg,#0f3460,#533483);border-radius:12px;padding:16px;color:#fff">
+              <div style="font-size:10px;opacity:0.7;margin-bottom:8px;font-weight:600">HSBC PLATINUM</div>
+              <div style="font-family:var(--mono);font-size:12px;opacity:0.6;letter-spacing:2px;margin-bottom:12px">**** **** **** 4521</div>
+              <div style="display:flex;justify-content:space-between;font-size:9px"><span style="opacity:0.7">Available</span><span style="font-weight:700">LKR 91,350</span></div>
+              <div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:6px"><div style="width:39%;height:100%;background:#f5a623;border-radius:2px"></div></div>
+            </div>
+            <div style="background:linear-gradient(135deg,#134e4a,#065f46);border-radius:12px;padding:16px;color:#fff">
+              <div style="font-size:10px;opacity:0.7;margin-bottom:8px;font-weight:600">SAMPATH WORLD MC</div>
+              <div style="font-family:var(--mono);font-size:12px;opacity:0.6;letter-spacing:2px;margin-bottom:12px">**** **** **** 8832</div>
+              <div style="display:flex;justify-content:space-between;font-size:9px"><span style="opacity:0.7">Available</span><span style="font-weight:700">LKR 27,600</span></div>
+              <div style="height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:6px"><div style="width:72%;height:100%;background:#f4566a;border-radius:2px"></div></div>
+            </div>
+            <div style="border:1px dashed var(--border3);border-radius:12px;padding:16px;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--text3);font-size:12px">
+              <span style="font-size:16px">+</span> Add new card
+            </div>
+          </div>
+        </div>
+        <!-- Step 1: API key -->
+        <div class="visual-panel" id="vpanel-1">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px">Settings → API Key</div>
+          <div style="background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:16px">
+            <div style="font-size:10px;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px">Your API Key</div>
+            <div style="background:var(--bg);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px">
+              <span style="font-family:var(--mono);font-size:11px;color:var(--accent);flex:1">a3f8b2e9c1d4g7h6j5k0m8n2p4q7r1s3</span>
+              <div style="background:var(--accent);color:#fff;border-radius:5px;padding:4px 10px;font-size:10px;font-weight:600;cursor:pointer">Copy</div>
+            </div>
+            <div style="margin-top:12px;font-size:10px;color:var(--text3)">Keep this key secret. Use it in your Shortcuts to authenticate requests to the API.</div>
+          </div>
+          <div class="api-block" style="margin-top:16px;flex:1">
+            <span class="json-brace">POST</span> <span class="json-str">/api/ingest</span><br>
+            <span class="json-brace">{</span><br>
+            &nbsp;<span class="json-key">"api_key"</span>: <span class="json-str">"a3f8b2e9..."</span>,<br>
+            &nbsp;<span class="json-key">"card_id"</span>: <span class="json-str">"card_c1_4521"</span>,<br>
+            &nbsp;<span class="json-key">"amount"</span>: <span class="json-num">2850</span>,<br>
+            &nbsp;<span class="json-key">"description"</span>: <span class="json-str">"Pizza Hut"</span>,<br>
+            &nbsp;<span class="json-key">"currency"</span>: <span class="json-str">"LKR"</span><br>
+            <span class="json-brace">}</span><br><br>
+            <span class="json-bool">→ 201 Created</span><br>
+            <span class="json-key">"message"</span>: <span class="json-str">"Recorded ✓"</span>
+          </div>
+        </div>
+        <!-- Step 2: Shortcut setup -->
+        <div class="visual-panel" id="vpanel-2">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">iPhone Shortcuts App</div>
+          <div class="phone-mock" style="width:200px;margin:0 auto">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div style="font-size:10px;font-weight:600;margin-bottom:8px;color:var(--text)">My Shortcuts</div>
+              <div class="phone-shortcut-item">
+                <div class="shortcut-icon" style="background:linear-gradient(135deg,#7c6cfa,#5e4fd4)">💳</div>
+                <div><div class="shortcut-name">Log Credit Spend</div><div class="shortcut-desc">Tap to log a transaction</div></div>
+              </div>
+              <div class="phone-shortcut-item">
+                <div class="shortcut-icon" style="background:linear-gradient(135deg,#1fd8a4,#0fa37a)">💰</div>
+                <div><div class="shortcut-name">Log Payment Made</div><div class="shortcut-desc">Record card payment</div></div>
+              </div>
+              <div class="phone-shortcut-item">
+                <div class="shortcut-icon" style="background:linear-gradient(135deg,#f5a623,#e8820c)">📊</div>
+                <div><div class="shortcut-name">Check Balance</div><div class="shortcut-desc">View available credit</div></div>
+              </div>
+              <div style="margin-top:12px;padding-top:8px;border-top:1px solid var(--border);font-size:9px;color:var(--text3);text-align:center">Tap any shortcut to run</div>
+            </div>
+          </div>
+        </div>
+        <!-- Step 3: Success confirmation -->
+        <div class="visual-panel" id="vpanel-3">
+          <div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Live Feed · Real-time</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="background:rgba(31,216,164,0.08);border:1px solid rgba(31,216,164,0.2);border-radius:10px;padding:14px;display:flex;align-items:center;gap:12px">
+              <div style="width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);flex-shrink:0"></div>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:600;color:var(--text)">Transaction received</div>
+                <div style="font-size:10px;color:var(--text3);margin-top:1px">Pizza Hut · LKR 2,850 · just now</div>
+              </div>
+            </div>
+            <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px">
+              <div style="font-size:10px;color:var(--text3);margin-bottom:8px">HSBC Platinum updated</div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:12px"><span style="color:var(--text2)">Balance</span><span style="font-family:var(--mono);color:var(--red)">LKR 61,500</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span style="color:var(--text2)">Available</span><span style="font-family:var(--mono);color:var(--green)">LKR 88,500</span></div>
+              <div style="height:4px;background:var(--bg4);border-radius:2px;margin-top:8px"><div style="width:41%;height:100%;background:var(--amber);border-radius:2px"></div></div>
+            </div>
+            <div style="background:rgba(245,166,35,0.06);border:1px solid rgba(245,166,35,0.15);border-radius:10px;padding:12px;font-size:11px;color:var(--amber)">
+              ⚠️ Food budget is now 82% used — LKR 24,660 / 30,000
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ STATS ═══════════ -->
+<div class="stats-section">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-item reveal">
+        <div class="stat-num">2<span class="stat-unit">min</span></div>
+        <div class="stat-desc">Average setup time for first Shortcut</div>
+      </div>
+      <div class="stat-item reveal reveal-d1">
+        <div class="stat-num">1<span class="stat-unit">tap</span></div>
+        <div class="stat-desc">To log any transaction from iPhone</div>
+      </div>
+      <div class="stat-item reveal reveal-d2">
+        <div class="stat-num">∞<span class="stat-unit"></span></div>
+        <div class="stat-desc">Cards, categories and family members</div>
+      </div>
+      <div class="stat-item reveal reveal-d3">
+        <div class="stat-num">0<span class="stat-unit">%</span></div>
+        <div class="stat-desc">Bank login required. Ever.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ PLATFORM ═══════════ -->
+<section class="platform-section" id="platform">
+  <div class="container">
+    <div class="platform-header reveal">
+      <div class="section-label">Platform Vision</div>
+      <h2 class="section-title">Start with finance.<br>Grow into everything.</h2>
+      <p class="section-sub">CreditLens is built on a simple idea: iPhone Shortcuts can power anything. Finance is just the beginning.</p>
+    </div>
+    <div class="platform-grid reveal">
+      <div class="platform-item" style="--item-color:var(--accent)">
+        <div class="platform-icon">💳</div>
+        <div class="platform-name">Credit Cards</div>
+        <div class="platform-desc">Full statement tracking, utilization, budgets, family sharing</div>
+        <div class="platform-status" style="background:rgba(31,216,164,0.1);color:var(--green)">Live</div>
+      </div>
+      <div class="platform-item" style="--item-color:var(--blue)">
+        <div class="platform-icon">🏦</div>
+        <div class="platform-name">Bank Accounts</div>
+        <div class="platform-desc">Log cash transactions and bank transfers via Shortcuts</div>
+        <div class="platform-status" style="background:rgba(245,166,35,0.1);color:var(--amber)">Q3 2025</div>
+      </div>
+      <div class="platform-item" style="--item-color:var(--green)">
+        <div class="platform-icon">💪</div>
+        <div class="platform-name">Health Habits</div>
+        <div class="platform-desc">Track workouts, meals, sleep via Health app + Shortcuts</div>
+        <div class="platform-status" style="background:rgba(245,166,35,0.1);color:var(--amber)">Q3 2025</div>
+      </div>
+      <div class="platform-item" style="--item-color:var(--pink)">
+        <div class="platform-icon">✅</div>
+        <div class="platform-name">Task Logging</div>
+        <div class="platform-desc">Log daily tasks, completions, and time spent via Shortcuts</div>
+        <div class="platform-status" style="background:rgba(245,166,35,0.1);color:var(--amber)">Q4 2025</div>
+      </div>
+      <div class="platform-item" style="--item-color:var(--amber)">
+        <div class="platform-icon">🏠</div>
+        <div class="platform-name">Home Automation</div>
+        <div class="platform-desc">Track energy usage, utility costs, home maintenance logs</div>
+        <div class="platform-status" style="background:rgba(255,255,255,0.05);color:var(--text3)">2026</div>
+      </div>
+      <div class="platform-item" style="--item-color:var(--green2)">
+        <div class="platform-icon">🚗</div>
+        <div class="platform-name">Vehicle Tracking</div>
+        <div class="platform-desc">Fuel logs, mileage, service history all via Shortcuts</div>
+        <div class="platform-status" style="background:rgba(255,255,255,0.05);color:var(--text3)">2026</div>
+      </div>
+      <div class="platform-item" style="--item-color:#e879a8">
+        <div class="platform-icon">📦</div>
+        <div class="platform-name">Inventory</div>
+        <div class="platform-desc">Small business stock, pantry management, asset tracking</div>
+        <div class="platform-status" style="background:rgba(255,255,255,0.05);color:var(--text3)">2026</div>
+      </div>
+      <div class="platform-item" style="--item-color:var(--text3)">
+        <div class="platform-icon">🔮</div>
+        <div class="platform-name">Build Your Own</div>
+        <div class="platform-desc">Open API. If your Shortcut can send a POST, we can log it.</div>
+        <div class="platform-status" style="background:rgba(255,255,255,0.05);color:var(--text3)">Open</div>
+      </div>
+    </div>
+
+    <div class="timeline reveal">
+      <div class="timeline-item">
+        <div class="tl-phase">Phase 1 · Now</div>
+        <div class="tl-title">Credit Command Centre</div>
+        <ul class="tl-items">
+          <li>Multi-card management</li>
+          <li>iPhone Shortcuts ingest</li>
+          <li>Family & household sharing</li>
+          <li>Budget alerts & analytics</li>
+          <li>Live statement view</li>
+        </ul>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-phase">Phase 2 · Q3–Q4 2025</div>
+        <div class="tl-title">Personal Finance OS</div>
+        <ul class="tl-items">
+          <li>Bank account tracking</li>
+          <li>AI spending insights</li>
+          <li>Recurring detection</li>
+          <li>Health & habit modules</li>
+          <li>Native iOS widget</li>
+        </ul>
+      </div>
+      <div class="timeline-item">
+        <div class="tl-phase">Phase 3 · 2026</div>
+        <div class="tl-title">Universal Shortcut Platform</div>
+        <ul class="tl-items">
+          <li>Open data platform API</li>
+          <li>Community shortcut library</li>
+          <li>Home & vehicle tracking</li>
+          <li>Business tools</li>
+          <li>Developer SDK</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ TESTIMONIALS ═══════════ -->
+<section class="testimonials-section">
+  <div class="container">
+    <div class="platform-header reveal" style="text-align:center;margin-bottom:60px">
+      <div class="section-label" style="justify-content:center">What users say</div>
+      <h2 class="section-title">Real people. Real control.</h2>
+    </div>
+    <div class="testimonials-grid reveal">
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-quote">I used to check my bank app three times a day worrying about my credit card balance. Now I just tap the Shortcut when I spend and CreditLens tells me exactly where I stand.</div>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:rgba(124,108,250,0.15);color:var(--accent)">RS</div>
+          <div><div class="author-name">Rashan S.</div><div class="author-role">Software engineer, Colombo</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-quote">The family sharing feature is incredible. My wife and I both add transactions to the same card and we always know the real balance before the statement hits.</div>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:rgba(31,216,164,0.15);color:var(--green)">AK</div>
+          <div><div class="author-name">Arjun K.</div><div class="author-role">Product manager, Kandy</div></div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <div class="stars">★★★★★</div>
+        <div class="testimonial-quote">Finally an app that treats you like an adult. No bank login, no read-only API drama. Just a clean interface and one tap to log. The statement view alone is worth it.</div>
+        <div class="testimonial-author">
+          <div class="author-avatar" style="background:rgba(245,166,35,0.15);color:var(--amber)">NP</div>
+          <div><div class="author-name">Nimali P.</div><div class="author-role">Finance analyst, Galle</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ PRICING ═══════════ -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <div class="pricing-header reveal">
+      <div class="section-label" style="justify-content:center">Pricing</div>
+      <h2 class="section-title" style="text-align:center">Simple, honest pricing.</h2>
+      <p class="section-sub" style="margin:0 auto;text-align:center">Start free. Upgrade when you're ready. Cancel any time.</p>
+      <div style="display:flex;justify-content:center;margin-top:28px">
+        <div class="pricing-toggle">
+          <div class="ptab active" onclick="setPricingTab(this,'monthly')">Monthly</div>
+          <div class="ptab" onclick="setPricingTab(this,'annual')">Annual <span style="font-size:10px;color:var(--green);margin-left:4px">–20%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="pricing-grid reveal">
+      <div class="pricing-card">
+        <div class="plan-name">Free</div>
+        <div class="plan-price"><sup>$</sup>0</div>
+        <div class="plan-period">forever</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span>Up to 2 credit cards</li>
+          <li><span class="check">✓</span>100 transactions / month</li>
+          <li><span class="check">✓</span>iPhone Shortcuts integration</li>
+          <li><span class="check">✓</span>3-month transaction history</li>
+          <li><span class="check">✓</span>Basic budget alerts</li>
+          <li><span class="check" style="background:rgba(255,255,255,0.04);color:var(--text3)">✕</span><span style="color:var(--text3)">Family sharing</span></li>
+          <li><span class="check" style="background:rgba(255,255,255,0.04);color:var(--text3)">✕</span><span style="color:var(--text3)">AI insights</span></li>
+        </ul>
+        <button class="plan-cta plan-cta-outline">Get started free</button>
+      </div>
+      <div class="pricing-card featured">
+        <div class="plan-name" style="color:var(--accent)">Pro</div>
+        <div class="plan-price" id="pro-price"><sup>$</sup>5</div>
+        <div class="plan-period" id="pro-period">per month</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span>Unlimited credit cards</li>
+          <li><span class="check">✓</span>Unlimited transactions</li>
+          <li><span class="check">✓</span>iPhone Shortcuts integration</li>
+          <li><span class="check">✓</span>Full history & analytics</li>
+          <li><span class="check">✓</span>Smart budget alerts</li>
+          <li><span class="check">✓</span>Family sharing (up to 5)</li>
+          <li><span class="check">✓</span>AI spending insights</li>
+        </ul>
+        <button class="plan-cta plan-cta-fill">Start 14-day free trial</button>
+      </div>
+      <div class="pricing-card">
+        <div class="plan-name">Family</div>
+        <div class="plan-price" id="fam-price"><sup>$</sup>9</div>
+        <div class="plan-period" id="fam-period">per month</div>
+        <ul class="plan-features">
+          <li><span class="check">✓</span>Everything in Pro</li>
+          <li><span class="check">✓</span>Up to 10 family members</li>
+          <li><span class="check">✓</span>Shared household dashboard</li>
+          <li><span class="check">✓</span>Per-member spend analysis</li>
+          <li><span class="check">✓</span>Granular card permissions</li>
+          <li><span class="check">✓</span>Priority support</li>
+          <li><span class="check">✓</span>Early platform feature access</li>
+        </ul>
+        <button class="plan-cta plan-cta-outline">Start 14-day free trial</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FINAL CTA ═══════════ -->
+<section class="cta-section">
+  <div class="container" style="position:relative;z-index:1">
+    <div class="reveal">
+      <div class="section-label" style="justify-content:center;margin-bottom:20px">Get started today</div>
+      <h2 class="cta-headline">
+        Your iPhone is already<br>capable of this.
+      </h2>
+      <p class="cta-sub">Take control of your credit in 2 minutes. Free forever. No bank login. No nonsense.</p>
+      <div class="hero-cta" style="margin-bottom:12px">
+        <a href="#" class="btn-xl">
+          Start for free
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="#" class="btn-xl-ghost">Read the docs</a>
+      </div>
+      <div class="hero-note" style="justify-content:center">
+        <span>✓ Free forever tier</span>
+        <span>✓ No credit card required</span>
+        <span>✓ Set up in 2 minutes</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="logo">Credit<span>Lens</span></div>
+      <p>Your iPhone. Supercharged. Start with credit card management — grow into a complete personal automation platform powered by Apple Shortcuts.</p>
+      <div class="footer-social" style="margin-top:20px">
+        <a href="#" class="social-btn">𝕏</a>
+        <a href="#" class="social-btn" title="GitHub">⌥</a>
+        <a href="#" class="social-btn" title="Discord">⊕</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h5>Product</h5>
+      <ul>
+        <li><a href="#">Features</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Changelog</a></li>
+        <li><a href="#">Roadmap</a></li>
+        <li><a href="#">Status</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Developers</h5>
+      <ul>
+        <li><a href="#">API Docs</a></li>
+        <li><a href="#">Shortcut Setup</a></li>
+        <li><a href="#">Ingest Reference</a></li>
+        <li><a href="#">GitHub</a></li>
+        <li><a href="#">SDKs</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h5>Company</h5>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© 2025 CreditLens. Built in Sri Lanka 🇱🇰</span>
+    <span style="display:flex;align-items:center;gap:6px">
+      <span style="width:6px;height:6px;border-radius:50%;background:var(--green);display:inline-block"></span>
+      All systems operational
+    </span>
+  </div>
+</footer>
+
+<script>
+// ── SCROLL REVEAL ──
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('in') });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── HOW IT WORKS STEPS ──
+function setStep(i) {
+  document.querySelectorAll('.step').forEach((s,idx) => {
+    s.classList.toggle('active', idx === i);
+  });
+  document.querySelectorAll('.visual-panel').forEach((p,idx) => {
+    p.style.display = 'none';
+    p.classList.remove('active');
+  });
+  const panel = document.getElementById('vpanel-' + i);
+  if(panel) { panel.style.display = 'flex'; setTimeout(() => panel.classList.add('active'), 10); }
+}
+
+// Auto-cycle steps
+let stepIdx = 0;
+setInterval(() => {
+  stepIdx = (stepIdx + 1) % 4;
+  setStep(stepIdx);
+}, 3500);
+
+// ── PRICING TOGGLE ──
+function setPricingTab(el, period) {
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const annual = period === 'annual';
+  document.getElementById('pro-price').innerHTML = annual ? '<sup>$</sup>4' : '<sup>$</sup>5';
+  document.getElementById('pro-period').textContent = annual ? 'per month, billed annually' : 'per month';
+  document.getElementById('fam-price').innerHTML = annual ? '<sup>$</sup>7' : '<sup>$</sup>9';
+  document.getElementById('fam-period').textContent = annual ? 'per month, billed annually' : 'per month';
+}
+
+// ── NAVBAR SCROLL ──
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  nav.style.background = window.scrollY > 40
+    ? 'rgba(9,9,13,0.92)'
+    : 'rgba(9,9,13,0.7)';
+});
+</script>
+</body>
+</html>
