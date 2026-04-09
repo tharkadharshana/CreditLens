@@ -16,7 +16,7 @@ export function getDaysInMonth(date: Date = new Date()): number {
 }
 
 export function getStatementPeriod(dueDate: number, currentDate: Date = new Date()) {
-  const year = currentDate.getFullYear();
+  let year = currentDate.getFullYear();
   let month = currentDate.getMonth();
   
   if (currentDate.getDate() < dueDate) {
