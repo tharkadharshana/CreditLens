@@ -6,9 +6,26 @@ export async function middleware(request: NextRequest) {
     request,
   })
 
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  const isLandingPage = request.nextUrl.pathname === '/'
+  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
+                     request.nextUrl.pathname.startsWith('/register')
+  const isApiPage = request.nextUrl.pathname.startsWith('/api')
+
+  // If we don't have keys, we can only serve the landing page or auth pages if they don't depend on Supabase
+  // For the sake of UI verification, we skip Supabase init if keys are missing
+  if (!supabaseUrl || !supabaseAnonKey) {
+    if (isLandingPage || isAuthPage || isApiPage) {
+      return supabaseResponse
+    }
+    return NextResponse.redirect(new URL('/login', request.url))
+  }
+
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
@@ -31,13 +48,9 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthPage = request.nextUrl.pathname.startsWith('/login') || 
-                     request.nextUrl.pathname.startsWith('/register')
-  
-  const isApiPage = request.nextUrl.pathname.startsWith('/api')
-
   // Redirect to login if not authenticated and trying to access a protected route
-  if (!user && !isAuthPage && !isApiPage) {
+  // Now allows the landing page (/)
+  if (!user && !isAuthPage && !isApiPage && !isLandingPage) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 

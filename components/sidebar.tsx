@@ -19,7 +19,7 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
 const navItems = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
+  { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
   { label: 'Cards', icon: CreditCard, href: '/cards' },
   { label: 'Budgets', icon: Target, href: '/budgets' },
   { label: 'Transactions', icon: History, href: '/transactions' },
