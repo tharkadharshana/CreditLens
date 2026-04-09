@@ -1,0 +1,3 @@
+# Don't cache build artifacts - forces fresh build on each deploy
+# .next/
+# .turbo/
