@@ -19,7 +19,7 @@ export function CategoryBadge({ category, size = 'md' }: CategoryBadgeProps) {
       style={{ backgroundColor: bgColor }}
     >
       <span>{config?.emoji || '📌'}</span>
-      {config?.name || category}
+      {config?.label || category}
     </div>
   );
 }
