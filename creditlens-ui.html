@@ -1,0 +1,1533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreditLens — Command Centre</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:#0b0b0f;
+  --bg2:#111116;
+  --bg3:#18181f;
+  --bg4:#1f1f28;
+  --border:#2a2a35;
+  --border2:#333340;
+  --text:#f0f0f5;
+  --text2:#9090a8;
+  --text3:#5a5a70;
+  --accent:#7c6cfa;
+  --accent2:#6055d8;
+  --accent-glow:rgba(124,108,250,0.18);
+  --green:#22d3a0;
+  --green-bg:rgba(34,211,160,0.1);
+  --red:#f4566a;
+  --red-bg:rgba(244,86,106,0.1);
+  --amber:#f5a623;
+  --amber-bg:rgba(245,166,35,0.1);
+  --blue:#4a9eff;
+  --blue-bg:rgba(74,158,255,0.1);
+  --card-r:12px;
+  --r:8px;
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+  --sidebar:220px;
+  --topbar:56px;
+}
+
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;overflow:hidden}
+
+/* ── LAYOUT ── */
+.shell{display:flex;height:100vh;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{
+  width:var(--sidebar);flex-shrink:0;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  padding:0;z-index:10;
+}
+.sidebar-logo{
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+}
+.logo-mark{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-0.3px}
+.logo-mark span{color:var(--accent)}
+.logo-sub{font-size:9px;letter-spacing:2px;color:var(--text3);text-transform:uppercase;margin-top:2px}
+
+.nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-section{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);padding:12px 12px 6px;margin-top:4px}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:9px 12px;border-radius:var(--r);
+  cursor:pointer;color:var(--text2);font-size:13px;font-weight:400;
+  transition:all 0.15s;position:relative;user-select:none;
+  margin-bottom:1px;
+}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:var(--accent-glow);color:var(--accent);font-weight:500}
+.nav-item.active::before{
+  content:'';position:absolute;left:0;top:4px;bottom:4px;
+  width:3px;background:var(--accent);border-radius:0 2px 2px 0;
+}
+.nav-item svg{width:15px;height:15px;flex-shrink:0;opacity:0.8}
+.nav-item.active svg{opacity:1}
+.nav-badge{
+  margin-left:auto;background:var(--red);color:#fff;
+  font-size:9px;font-weight:600;padding:1px 5px;border-radius:10px;min-width:16px;text-align:center;
+}
+
+.sidebar-footer{
+  padding:12px 8px;border-top:1px solid var(--border);
+}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+.topbar{
+  height:var(--topbar);flex-shrink:0;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 24px;gap:12px;
+}
+.breadcrumb{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px}
+.breadcrumb span{color:var(--text);font-weight:500}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:var(--r);border:1px solid var(--border2);
+  background:var(--bg3);color:var(--text2);font-family:var(--font);font-size:12px;font-weight:500;
+  cursor:pointer;transition:all 0.15s;white-space:nowrap;
+}
+.btn:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2);color:#fff}
+.btn svg{width:13px;height:13px}
+.avatar{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--accent-glow);border:1px solid var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:var(--accent);cursor:pointer;
+}
+
+.content{flex:1;overflow-y:auto;padding:24px}
+
+/* PAGE */
+.page{display:none}
+.page.active{display:block;animation:fadeIn 0.2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── COMPONENTS ── */
+
+/* Page header */
+.page-header{margin-bottom:24px}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-0.5px}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px}
+.page-header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+
+/* Stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-r);
+  padding:18px 20px;cursor:default;transition:border-color 0.15s;position:relative;overflow:hidden;
+}
+.stat-card::after{
+  content:'';position:absolute;top:0;right:0;width:60px;height:60px;
+  border-radius:50%;transform:translate(20px,-20px);
+  background:var(--card-glow,rgba(124,108,250,0.06));
+}
+.stat-card:hover{border-color:var(--border2)}
+.stat-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.stat-label svg{width:14px;height:14px;opacity:0.6}
+.stat-value{font-size:24px;font-weight:600;letter-spacing:-0.5px;font-family:var(--mono);margin-bottom:4px}
+.stat-meta{font-size:11px;color:var(--text3)}
+.stat-card.green{--card-glow:rgba(34,211,160,0.08)} .stat-card.green .stat-value{color:var(--green)}
+.stat-card.red{--card-glow:rgba(244,86,106,0.08)} .stat-card.red .stat-value{color:var(--red)}
+.stat-card.amber{--card-glow:rgba(245,166,35,0.08)} .stat-card.amber .stat-value{color:var(--amber)}
+.stat-card.blue{--card-glow:rgba(74,158,255,0.08)} .stat-card.blue .stat-value{color:var(--blue)}
+
+/* Grid layouts */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.col-span-2{grid-column:span 2}
+.grid-60-40{display:grid;grid-template-columns:1.5fr 1fr;gap:16px}
+
+/* Card */
+.card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--card-r);
+  overflow:hidden;
+}
+.card-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 20px;border-bottom:1px solid var(--border);
+}
+.card-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-title svg{width:14px;height:14px;color:var(--accent)}
+.card-body{padding:20px}
+.card-link{font-size:11px;color:var(--accent);cursor:pointer;opacity:0.8}
+.card-link:hover{opacity:1}
+
+/* Empty state */
+.empty{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:48px 24px;text-align:center;color:var(--text3);gap:10px;
+}
+.empty svg{width:32px;height:32px;opacity:0.3}
+.empty p{font-size:13px}
+.empty small{font-size:11px;color:var(--text3)}
+
+/* Credit card visual */
+.credit-card-vis{
+  border-radius:14px;padding:22px;position:relative;overflow:hidden;
+  min-height:160px;display:flex;flex-direction:column;justify-content:space-between;
+  cursor:pointer;transition:transform 0.2s;
+}
+.credit-card-vis:hover{transform:translateY(-2px)}
+.credit-card-vis::before{
+  content:'';position:absolute;top:-40px;right:-40px;
+  width:140px;height:140px;border-radius:50%;
+  background:rgba(255,255,255,0.06);
+}
+.credit-card-vis::after{
+  content:'';position:absolute;bottom:-30px;left:-20px;
+  width:100px;height:100px;border-radius:50%;
+  background:rgba(255,255,255,0.04);
+}
+.cc-top{display:flex;justify-content:space-between;align-items:flex-start;position:relative;z-index:1}
+.cc-bank{font-size:12px;font-weight:600;opacity:0.9;letter-spacing:0.5px}
+.cc-network{font-size:10px;opacity:0.7;text-align:right}
+.cc-number{font-family:var(--mono);font-size:13px;letter-spacing:2px;opacity:0.8;position:relative;z-index:1;margin:16px 0 8px}
+.cc-bottom{display:flex;justify-content:space-between;align-items:flex-end;position:relative;z-index:1}
+.cc-name{font-size:10px;opacity:0.7;text-transform:uppercase;letter-spacing:1px}
+.cc-limit{text-align:right}
+.cc-limit-val{font-size:11px;font-weight:600;font-family:var(--mono)}
+.cc-limit-lbl{font-size:9px;opacity:0.6;text-transform:uppercase;letter-spacing:0.5px}
+.cc-util-bar{height:3px;background:rgba(255,255,255,0.2);border-radius:2px;margin-top:8px;position:relative;z-index:1}
+.cc-util-fill{height:100%;border-radius:2px;transition:width 0.6s ease}
+
+/* Cards grid */
+.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+.card-item-detail{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--card-r);
+  padding:16px;display:flex;flex-direction:column;gap:12px;
+}
+.card-item-header{display:flex;align-items:center;gap:10px}
+.card-emoji{font-size:20px;width:36px;height:36px;display:flex;align-items:center;justify-content:center;background:var(--bg4);border-radius:8px}
+.card-info{flex:1;min-width:0}
+.card-info-name{font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-info-bank{font-size:11px;color:var(--text3)}
+.card-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cs-item label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px}
+.cs-item p{font-size:14px;font-weight:600;font-family:var(--mono);margin-top:2px}
+.util-bar{height:4px;background:var(--border2);border-radius:2px;margin-top:6px}
+.util-fill{height:100%;border-radius:2px;transition:width 0.6s}
+
+/* Progress bar util */
+.pct-bar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:4px}
+.pct-fill{height:100%;border-radius:2px}
+
+/* Transaction table */
+.tx-table{width:100%;border-collapse:collapse}
+.tx-table th{
+  font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);
+  padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);font-weight:500;
+}
+.tx-table td{padding:11px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.tx-table tr:last-child td{border-bottom:none}
+.tx-table tr:hover td{background:var(--bg3)}
+.tx-merchant{font-weight:500}
+.tx-desc{font-size:11px;color:var(--text3);margin-top:1px}
+.tx-amount{font-family:var(--mono);font-weight:600;text-align:right}
+.tx-amount.debit{color:var(--red)}
+.tx-amount.credit{color:var(--green)}
+.cat-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:3px 8px;border-radius:20px;font-size:10px;font-weight:500;
+}
+.source-badge{
+  display:inline-flex;align-items:center;gap:3px;
+  padding:2px 7px;border-radius:20px;font-size:10px;border:1px solid var(--border2);color:var(--text3);
+}
+
+/* Budget bars */
+.budget-item{padding:14px 20px;border-bottom:1px solid var(--border)}
+.budget-item:last-child{border-bottom:none}
+.budget-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.budget-name{font-size:13px;font-weight:500;display:flex;align-items:center;gap:6px}
+.budget-amounts{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.budget-bar{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.budget-fill{height:100%;border-radius:3px;transition:width 0.6s}
+
+/* Alert items */
+.alert-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+  cursor:pointer;transition:background 0.1s;
+}
+.alert-item:hover{background:var(--bg3)}
+.alert-item:last-child{border-bottom:none}
+.alert-dot{width:8px;height:8px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.alert-content{flex:1;min-width:0}
+.alert-msg{font-size:13px;font-weight:500}
+.alert-meta{font-size:11px;color:var(--text3);margin-top:2px}
+.alert-unread .alert-msg::before{display:none}
+
+/* Chart placeholder */
+.chart-area{
+  height:180px;display:flex;align-items:flex-end;gap:3px;
+  padding:12px 0 0;position:relative;
+}
+.chart-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.chart-bar{
+  width:100%;border-radius:3px 3px 0 0;
+  background:linear-gradient(to top, var(--accent2), var(--accent));
+  min-height:4px;transition:height 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  position:relative;cursor:pointer;
+}
+.chart-bar:hover::after{
+  content:attr(data-val);position:absolute;top:-24px;left:50%;transform:translateX(-50%);
+  font-size:10px;font-family:var(--mono);background:var(--bg4);
+  border:1px solid var(--border2);padding:2px 6px;border-radius:4px;white-space:nowrap;color:var(--text);
+}
+.chart-bar.green{background:linear-gradient(to top,#0fa37a,var(--green))}
+.chart-bar.red{background:linear-gradient(to top,#c72840,var(--red))}
+.chart-lbl{font-size:9px;color:var(--text3)}
+.chart-grid-line{position:absolute;left:0;right:0;border-top:1px dashed var(--border);pointer-events:none}
+
+/* Donut chart */
+.donut-wrap{display:flex;align-items:center;gap:24px}
+.donut-svg{flex-shrink:0}
+.donut-legend{display:flex;flex-direction:column;gap:10px;flex:1}
+.legend-item{display:flex;align-items:center;gap:8px;font-size:12px}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-name{flex:1;color:var(--text2)}
+.legend-val{font-family:var(--mono);font-size:12px;color:var(--text)}
+
+/* Analytics chart - line */
+.sparkline-area{position:relative;height:120px;overflow:hidden}
+
+/* Tabs */
+.tabs{display:flex;gap:2px;padding:4px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border);width:fit-content}
+.tab{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;color:var(--text3);transition:all 0.15s}
+.tab.active{background:var(--bg2);color:var(--text);box-shadow:0 1px 3px rgba(0,0,0,0.3)}
+
+/* Form elements */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row{display:flex;flex-direction:column;gap:6px}
+.form-row.full{grid-column:span 2}
+label.field-lbl{font-size:11px;color:var(--text2);letter-spacing:0.5px;font-weight:500}
+.field{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);
+  padding:9px 12px;color:var(--text);font-family:var(--font);font-size:13px;
+  outline:none;transition:border-color 0.15s;width:100%;
+}
+.field:focus{border-color:var(--accent)}
+select.field{cursor:pointer}
+.field option{background:var(--bg3)}
+
+/* Color picker */
+.color-opts{display:flex;gap:8px;flex-wrap:wrap}
+.color-opt{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.15s}
+.color-opt.sel{border-color:#fff;transform:scale(1.1)}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.toggle-row:last-child{border-bottom:none}
+.toggle-info{}
+.toggle-name{font-size:13px;font-weight:500}
+.toggle-desc{font-size:11px;color:var(--text3);margin-top:2px}
+.toggle{
+  width:36px;height:20px;background:var(--border2);border-radius:10px;
+  position:relative;cursor:pointer;transition:background 0.2s;flex-shrink:0;
+}
+.toggle.on{background:var(--accent)}
+.toggle::after{
+  content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;
+  top:3px;left:3px;transition:transform 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle.on::after{transform:translateX(16px)}
+
+/* Statement card */
+.stmt-card{
+  background:var(--bg3);border:1px solid var(--border);border-radius:var(--card-r);
+  padding:20px;margin-bottom:14px;
+}
+.stmt-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.stmt-card-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.stmt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.stmt-item label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px}
+.stmt-item p{font-size:15px;font-weight:600;font-family:var(--mono);margin-top:3px}
+.status-pill{
+  padding:4px 10px;border-radius:20px;font-size:10px;font-weight:600;
+  text-transform:uppercase;letter-spacing:0.5px;
+}
+
+/* Family member */
+.member-item{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 20px;border-bottom:1px solid var(--border);
+}
+.member-item:last-child{border-bottom:none}
+.member-avatar{
+  width:36px;height:36px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:600;flex-shrink:0;
+}
+.member-info{flex:1;min-width:0}
+.member-name{font-size:13px;font-weight:500}
+.member-email{font-size:11px;color:var(--text3);margin-top:1px}
+.role-badge{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+
+/* Shortcut helper */
+.shortcut-step{
+  display:flex;gap:16px;padding:18px 0;border-bottom:1px solid var(--border);
+}
+.shortcut-step:last-child{border-bottom:none}
+.step-num{
+  width:28px;height:28px;border-radius:50%;background:var(--accent-glow);
+  border:1px solid var(--accent);color:var(--accent);font-size:11px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.step-content{flex:1}
+.step-title{font-size:13px;font-weight:600;margin-bottom:4px}
+.step-desc{font-size:12px;color:var(--text2);line-height:1.6}
+.code-block{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  padding:12px;margin-top:10px;font-family:var(--mono);font-size:11px;
+  color:var(--green);line-height:1.7;overflow-x:auto;
+}
+.api-key-row{
+  display:flex;align-items:center;gap:8px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  padding:10px 14px;
+}
+.api-key-val{font-family:var(--mono);font-size:12px;color:var(--accent);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Live feed */
+.feed-item{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  animation:slideIn 0.3s ease;
+}
+@keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+.feed-icon{
+  width:32px;height:32px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+}
+.feed-content{flex:1;min-width:0}
+.feed-title{font-size:13px;font-weight:500}
+.feed-meta{font-size:11px;color:var(--text3);margin-top:1px}
+.feed-amount{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--red)}
+.pulse-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 0 0 rgba(34,211,160,0.4);
+  animation:pulse 1.5s ease infinite;
+}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(34,211,160,0.4)}70%{box-shadow:0 0 0 8px rgba(34,211,160,0)}100%{box-shadow:0 0 0 0 rgba(34,211,160,0)}}
+
+/* Modal overlay */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,0.7);
+  display:flex;align-items:center;justify-content:center;z-index:100;
+  opacity:0;pointer-events:none;transition:opacity 0.2s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  width:480px;max-width:90vw;max-height:80vh;overflow-y:auto;
+  transform:translateY(8px);transition:transform 0.2s;
+}
+.modal-overlay.open .modal{transform:translateY(0)}
+.modal-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 24px;border-bottom:1px solid var(--border);
+}
+.modal-title{font-size:15px;font-weight:600}
+.modal-body{padding:24px}
+.modal-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.close-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:4px;font-size:18px;line-height:1}
+.close-btn:hover{color:var(--text)}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* utils */
+.flex{display:flex}.items-center{align-items:center}.gap-8{gap:8px}.gap-12{gap:12px}.ml-auto{margin-left:auto}
+.mt-16{margin-top:16px}.mb-16{margin-bottom:16px}.mb-8{margin-bottom:8px}
+.text-green{color:var(--green)}.text-red{color:var(--red)}.text-amber{color:var(--amber)}.text-accent{color:var(--accent)}.text-muted{color:var(--text3)}
+.mono{font-family:var(--mono)}
+.fw600{font-weight:600}.fs11{font-size:11px}.fs12{font-size:12px}.fs13{font-size:13px}
+.divider{height:1px;background:var(--border);margin:16px 0}
+.section-title{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">Credit<span>Lens</span></div>
+    <div class="logo-sub">Command Centre</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" data-page="cards">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Cards
+    </div>
+    <div class="nav-item" data-page="budgets">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      Budgets
+    </div>
+    <div class="nav-item" data-page="transactions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+      Transactions
+      <span class="nav-badge">3</span>
+    </div>
+    <div class="nav-section">Insights</div>
+    <div class="nav-item" data-page="analytics">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Analytics
+    </div>
+    <div class="nav-item" data-page="livefeed">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81a19.79 19.79 0 01-3.07-8.63A2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14"/></svg>
+      Live Feed
+    </div>
+    <div class="nav-item" data-page="statement">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Statement
+    </div>
+    <div class="nav-section">Setup</div>
+    <div class="nav-item" data-page="family">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Family
+    </div>
+    <div class="nav-item" data-page="shortcut">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+      Shortcut Helper
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="nav-item" data-page="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 005 5a10 10 0 0014.07 14.07A10 10 0 0019.07 4.93z"/></svg>
+      Settings
+    </div>
+    <div class="nav-item" style="color:var(--red)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <header class="topbar">
+    <div class="breadcrumb">Lobby › <span id="breadcrumb-text">Dashboard</span></div>
+    <div class="topbar-right">
+      <button class="btn" onclick="showModal('add-card-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+        Setup iPhone
+      </button>
+      <button class="btn btn-primary" onclick="showModal('add-card-modal')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Card
+      </button>
+      <div class="avatar">JD</div>
+    </div>
+  </header>
+
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">Hi, John <span style="color:var(--accent)">·</span></div>
+          <div class="page-sub">Here's your credit health overview for today.</div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card green">
+          <div class="stat-label">Available Credit <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="stat-value">LKR 241,350</div>
+          <div class="stat-meta">61.4% available across 3 cards</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Monthly Spend <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+          <div class="stat-value">LKR 58,450</div>
+          <div class="stat-meta">Current statement period</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">Daily Avg <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div class="stat-value">LKR 1,948</div>
+          <div class="stat-meta">Last 30 days</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Total Outstanding <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>
+          <div class="stat-value">LKR 151,650</div>
+          <div class="stat-meta">Across all cards</div>
+        </div>
+      </div>
+
+      <div class="grid-60-40">
+        <!-- Recent Transactions -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+              Recent Transactions
+            </div>
+            <span class="card-link" onclick="navTo('transactions')">View all activity →</span>
+          </div>
+          <table class="tx-table" style="width:100%">
+            <thead><tr>
+              <th>Merchant</th><th>Category</th><th>Card</th><th>Amount</th>
+            </tr></thead>
+            <tbody id="dash-tx-body">
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Right column -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <!-- Spending Mix -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Spending Mix
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="donut-wrap">
+                <svg class="donut-svg" width="80" height="80" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="var(--bg4)" stroke-width="12"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="#f97316" stroke-width="12" stroke-dasharray="53 124" stroke-dashoffset="0" transform="rotate(-90 40 40)"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="#3b82f6" stroke-width="12" stroke-dasharray="38 124" stroke-dashoffset="-53" transform="rotate(-90 40 40)"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="#8b5cf6" stroke-width="12" stroke-dasharray="22 124" stroke-dashoffset="-91" transform="rotate(-90 40 40)"/>
+                  <circle cx="40" cy="40" r="28" fill="none" stroke="#22d3a0" stroke-width="12" stroke-dasharray="11 124" stroke-dashoffset="-113" transform="rotate(-90 40 40)"/>
+                </svg>
+                <div class="donut-legend">
+                  <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span class="legend-name">Food & Dining</span><span class="legend-val">43%</span></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span class="legend-name">Transport</span><span class="legend-val">31%</span></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:#8b5cf6"></div><span class="legend-name">Shopping</span><span class="legend-val">18%</span></div>
+                  <div class="legend-item"><div class="legend-dot" style="background:#22d3a0"></div><span class="legend-name">Other</span><span class="legend-val">8%</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Your Cards -->
+          <div class="card">
+            <div class="card-head">
+              <div class="card-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                Your Cards
+              </div>
+              <span class="card-link" onclick="navTo('cards')">Manage →</span>
+            </div>
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:10px" id="dash-cards-mini">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Spend chart -->
+      <div class="card mt-16">
+        <div class="card-head">
+          <div class="card-title">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            30-Day Spend Trend
+          </div>
+          <div class="flex gap-8">
+            <div class="tabs">
+              <div class="tab active">30 Days</div>
+              <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">3 Months</div>
+              <div class="tab" onclick="this.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));this.classList.add('active')">Year</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body" style="padding-bottom:8px">
+          <div class="chart-area" id="spend-chart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ CARDS PAGE ══ -->
+    <div class="page" id="page-cards">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">My Cards</div>
+          <div class="page-sub">Manage all your credit cards in one place</div>
+        </div>
+        <button class="btn btn-primary" onclick="showModal('add-card-modal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add New Card
+        </button>
+      </div>
+
+      <div class="cards-grid" id="cards-grid"></div>
+
+      <div class="card mt-16">
+        <div class="card-head">
+          <div class="card-title">Card Comparison</div>
+        </div>
+        <div class="card-body">
+          <table class="tx-table" style="width:100%">
+            <thead><tr>
+              <th>Card</th><th>Limit</th><th>Balance</th><th>Available</th><th>Utilization</th><th>Due Date</th>
+            </tr></thead>
+            <tbody id="card-compare-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ BUDGETS ══ -->
+    <div class="page" id="page-budgets">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">Budgets</div>
+          <div class="page-sub">Set spending limits and track against them</div>
+        </div>
+        <button class="btn btn-primary" onclick="showModal('add-budget-modal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Budget
+        </button>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Total Budgeted</div><div class="stat-value" style="color:var(--accent)">LKR 120,000</div><div class="stat-meta">Per month across all cards</div></div>
+        <div class="stat-card green"><div class="stat-label">Spent So Far</div><div class="stat-value">LKR 58,450</div><div class="stat-meta">48.7% of total budget</div></div>
+        <div class="stat-card"><div class="stat-label">Remaining</div><div class="stat-value" style="color:var(--green)">LKR 61,550</div><div class="stat-meta">Until end of month</div></div>
+        <div class="stat-card amber"><div class="stat-label">Alerts Triggered</div><div class="stat-value">2</div><div class="stat-meta">Categories near limit</div></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title">Active Budgets</div><div class="flex gap-8">
+          <div class="tabs"><div class="tab active">Monthly</div><div class="tab" onclick="swapTab(this)">Statement</div></div>
+        </div></div>
+        <div id="budget-list"></div>
+      </div>
+    </div>
+
+    <!-- ══ TRANSACTIONS ══ -->
+    <div class="page" id="page-transactions">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">Transactions</div>
+          <div class="page-sub">All spending across all cards</div>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn" onclick="showModal('add-tx-modal')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Manual
+          </button>
+          <button class="btn">↓ Export CSV</button>
+        </div>
+      </div>
+      <div class="flex gap-8 mb-16">
+        <input class="field" placeholder="Search merchant or description…" style="max-width:280px">
+        <select class="field" style="width:auto">
+          <option>All Categories</option>
+          <option>Food & Dining</option><option>Transport</option><option>Shopping</option><option>Health</option><option>Entertainment</option><option>Utilities</option>
+        </select>
+        <select class="field" style="width:auto">
+          <option>All Cards</option>
+          <option>HSBC Platinum</option><option>Sampath Visa</option><option>BOC Master</option>
+        </select>
+        <select class="field" style="width:auto">
+          <option>This Month</option><option>Last Month</option><option>Last 3 Months</option>
+        </select>
+      </div>
+      <div class="card">
+        <table class="tx-table" style="width:100%">
+          <thead><tr>
+            <th>Date</th><th>Merchant</th><th>Category</th><th>Card</th><th>Source</th><th style="text-align:right">Amount</th>
+          </tr></thead>
+          <tbody id="full-tx-body"></tbody>
+        </table>
+        <div style="padding:14px 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border)">
+          <span class="text-muted fs12">Showing 12 of 47 transactions</span>
+          <div class="flex gap-8">
+            <button class="btn">← Prev</button>
+            <button class="btn">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ANALYTICS ══ -->
+    <div class="page" id="page-analytics">
+      <div class="page-header">
+        <div class="page-title">Analytics</div>
+        <div class="page-sub">Deep insights into your spending patterns</div>
+      </div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-label">Highest Month</div><div class="stat-value" style="color:var(--accent)">LKR 94,200</div><div class="stat-meta">January 2025</div></div>
+        <div class="stat-card green"><div class="stat-label">Lowest Month</div><div class="stat-value">LKR 32,800</div><div class="stat-meta">February 2025</div></div>
+        <div class="stat-card"><div class="stat-label">Avg / Month</div><div class="stat-value" style="color:var(--blue)">LKR 61,500</div><div class="stat-meta">Last 6 months</div></div>
+        <div class="stat-card"><div class="stat-label">Transactions</div><div class="stat-value">247</div><div class="stat-meta">This year</div></div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Monthly Spend (6 months)</div></div>
+          <div class="card-body">
+            <div class="chart-area" id="monthly-chart"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title">Spend by Category</div></div>
+          <div class="card-body">
+            <div id="cat-chart"></div>
+          </div>
+        </div>
+      </div>
+      <div class="card mt-16">
+        <div class="card-head"><div class="card-title">Top Merchants This Month</div></div>
+        <div class="card-body">
+          <div id="merchant-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ LIVE FEED ══ -->
+    <div class="page" id="page-livefeed">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">Live Feed</div>
+          <div class="page-sub">Real-time transaction stream from iPhone Shortcuts</div>
+        </div>
+        <div class="flex items-center gap-8">
+          <div class="pulse-dot"></div>
+          <span class="fs12 text-green">Connected · Listening</span>
+        </div>
+      </div>
+      <div class="grid-60-40">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Incoming Transactions</div><span class="card-link">Pause feed</span></div>
+          <div id="live-feed-list"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Today's Summary</div></div>
+            <div class="card-body">
+              <div class="stat-card" style="border:none;padding:0;margin-bottom:12px"><div class="stat-label">Total Today</div><div class="stat-value" style="color:var(--red);font-size:20px">LKR 8,450</div></div>
+              <div class="stat-card" style="border:none;padding:0;margin-bottom:12px"><div class="stat-label">Transactions</div><div class="stat-value" style="font-size:20px">6</div></div>
+              <div class="stat-card" style="border:none;padding:0"><div class="stat-label">Via Shortcut</div><div class="stat-value" style="color:var(--green);font-size:20px">5</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Shortcut Status</div></div>
+            <div class="card-body">
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Auto-ingest</div><div class="toggle-desc">Parse bank notifications</div></div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Auto-categorise</div><div class="toggle-desc">AI category detection</div></div>
+                <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info"><div class="toggle-name">Alert on large spend</div><div class="toggle-desc">Over LKR 10,000</div></div>
+                <div class="toggle" onclick="this.classList.toggle('on')"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ STATEMENT ══ -->
+    <div class="page" id="page-statement">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">Current Statement</div>
+          <div class="page-sub">Your live statement snapshot as of today</div>
+        </div>
+        <div class="flex gap-8">
+          <select class="field" style="width:auto">
+            <option>April 2025</option><option>March 2025</option><option>February 2025</option>
+          </select>
+          <button class="btn">↓ Download PDF</button>
+        </div>
+      </div>
+      <div id="statement-cards"></div>
+    </div>
+
+    <!-- ══ FAMILY ══ -->
+    <div class="page" id="page-family">
+      <div class="page-header-row">
+        <div class="page-header">
+          <div class="page-title">Family Management</div>
+          <div class="page-sub">Manage household members and shared cards</div>
+        </div>
+        <button class="btn btn-primary" onclick="showModal('invite-modal')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Invite Member
+        </button>
+      </div>
+      <div class="grid-60-40">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Household Members</div></div>
+          <div id="family-members"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-head"><div class="card-title">This Month's Spend by Member</div></div>
+            <div class="card-body">
+              <div id="family-spend-chart"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Shared Cards</div></div>
+            <div class="card-body" id="shared-cards-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SHORTCUT HELPER ══ -->
+    <div class="page" id="page-shortcut">
+      <div class="page-header">
+        <div class="page-title">Shortcut Helper</div>
+        <div class="page-sub">Connect your iPhone to automatically log transactions</div>
+      </div>
+      <div class="grid-60-40">
+        <div class="card">
+          <div class="card-head"><div class="card-title">Setup Guide</div></div>
+          <div class="card-body" id="shortcut-steps"></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-head"><div class="card-title">Your API Key</div></div>
+            <div class="card-body">
+              <div class="api-key-row">
+                <span class="api-key-val" id="api-key-display">••••••••••••••••••••••••••••••••</span>
+                <button class="btn" onclick="toggleApiKey()" id="api-key-btn">Reveal</button>
+                <button class="btn" onclick="copyApiKey()">Copy</button>
+              </div>
+              <div class="text-muted fs11 mt-16">Keep this key secret. Use it in your Shortcut to authenticate requests.</div>
+              <button class="btn mt-16" style="color:var(--red);border-color:var(--red-bg)">⟳ Regenerate Key</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Your Card IDs</div></div>
+            <div class="card-body" id="card-ids-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Test Endpoint</div></div>
+            <div class="card-body">
+              <div class="text-muted fs12 mb-16">Send a test transaction to verify your Shortcut is working.</div>
+              <select class="field mb-8" style="width:100%"><option>Select card to test…</option><option>HSBC Platinum</option><option>Sampath Visa</option></select>
+              <button class="btn btn-primary" style="width:100%" onclick="testEndpoint()">Send Test Transaction</button>
+              <div id="test-result" style="margin-top:10px;font-size:12px;display:none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="page" id="page-settings">
+      <div class="page-header">
+        <div class="page-title">Settings</div>
+        <div class="page-sub">Manage your account and preferences</div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <div class="card mb-16">
+            <div class="card-head"><div class="card-title">Profile</div></div>
+            <div class="card-body">
+              <div class="form-grid">
+                <div class="form-row"><label class="field-lbl">Full Name</label><input class="field" value="John Dharshana"></div>
+                <div class="form-row"><label class="field-lbl">Email</label><input class="field" value="john@example.com"></div>
+                <div class="form-row"><label class="field-lbl">Currency</label><select class="field"><option selected>LKR — Sri Lankan Rupee</option><option>USD</option><option>GBP</option></select></div>
+                <div class="form-row"><label class="field-lbl">Time Zone</label><select class="field"><option selected>Asia/Colombo (UTC+5:30)</option></select></div>
+              </div>
+              <button class="btn btn-primary mt-16">Save Profile</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Danger Zone</div></div>
+            <div class="card-body">
+              <button class="btn" style="color:var(--red);border-color:rgba(244,86,106,0.3);width:100%;justify-content:center">Delete Account & All Data</button>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="card mb-16">
+            <div class="card-head"><div class="card-title">Notifications</div></div>
+            <div class="card-body">
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Payment due reminders</div><div class="toggle-desc">7 days before due date</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Large transaction alerts</div><div class="toggle-desc">Over LKR 10,000</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Budget exceeded</div><div class="toggle-desc">When category limit hit</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Statement ready</div><div class="toggle-desc">Monthly statement available</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Weekly summary</div><div class="toggle-desc">Every Sunday morning</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">Display</div></div>
+            <div class="card-body">
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Mask balances</div><div class="toggle-desc">Hide amounts in UI</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+              <div class="toggle-row"><div class="toggle-info"><div class="toggle-name">Compact view</div><div class="toggle-desc">Smaller transaction rows</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+</div><!-- /shell -->
+
+<!-- ══ MODALS ══ -->
+
+<!-- Add Card Modal -->
+<div class="modal-overlay" id="add-card-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Add New Card</div>
+      <button class="close-btn" onclick="hideModal('add-card-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label class="field-lbl">Bank Name</label><input class="field" placeholder="e.g. HSBC, Sampath" id="new-bank"></div>
+        <div class="form-row"><label class="field-lbl">Card Name</label><input class="field" placeholder="e.g. Platinum Visa" id="new-name"></div>
+        <div class="form-row"><label class="field-lbl">Nickname</label><input class="field" placeholder="e.g. Daily card" id="new-nick"></div>
+        <div class="form-row"><label class="field-lbl">Last 4 Digits</label><input class="field" placeholder="0000" maxlength="4" id="new-last4"></div>
+        <div class="form-row"><label class="field-lbl">Network</label><select class="field" id="new-network"><option value="visa">Visa</option><option value="mastercard">Mastercard</option><option value="amex">Amex</option></select></div>
+        <div class="form-row"><label class="field-lbl">Credit Limit (LKR)</label><input class="field" type="number" placeholder="150000" id="new-limit"></div>
+        <div class="form-row"><label class="field-lbl">Statement Day</label><input class="field" type="number" min="1" max="31" placeholder="25" id="new-stmt-day"></div>
+        <div class="form-row"><label class="field-lbl">Payment Due Day</label><input class="field" type="number" min="1" max="31" placeholder="15" id="new-due-day"></div>
+        <div class="form-row full"><label class="field-lbl">Card Colour</label>
+          <div class="color-opts" id="color-opts">
+            <div class="color-opt sel" style="background:linear-gradient(135deg,#1a1a2e,#16213e)" data-color="#1a1a2e" onclick="selectColor(this)"></div>
+            <div class="color-opt" style="background:linear-gradient(135deg,#0f3460,#533483)" data-color="#0f3460" onclick="selectColor(this)"></div>
+            <div class="color-opt" style="background:linear-gradient(135deg,#e94560,#f5a623)" data-color="#e94560" onclick="selectColor(this)"></div>
+            <div class="color-opt" style="background:linear-gradient(135deg,#134e4a,#065f46)" data-color="#134e4a" onclick="selectColor(this)"></div>
+            <div class="color-opt" style="background:linear-gradient(135deg,#92400e,#b45309)" data-color="#92400e" onclick="selectColor(this)"></div>
+            <div class="color-opt" style="background:linear-gradient(135deg,#334155,#1e293b)" data-color="#334155" onclick="selectColor(this)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="hideModal('add-card-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addCard()">Add Card</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Transaction Modal -->
+<div class="modal-overlay" id="add-tx-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Add Transaction</div>
+      <button class="close-btn" onclick="hideModal('add-tx-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row full"><label class="field-lbl">Card</label><select class="field" id="tx-card"><option>HSBC Platinum</option><option>Sampath Visa</option><option>BOC Master</option></select></div>
+        <div class="form-row"><label class="field-lbl">Amount (LKR)</label><input class="field" type="number" placeholder="0.00" id="tx-amount"></div>
+        <div class="form-row"><label class="field-lbl">Type</label><select class="field" id="tx-type"><option value="debit">Debit (spend)</option><option value="credit">Credit (payment)</option><option value="refund">Refund</option></select></div>
+        <div class="form-row full"><label class="field-lbl">Merchant / Description</label><input class="field" placeholder="e.g. Pizza Hut Colombo" id="tx-desc"></div>
+        <div class="form-row"><label class="field-lbl">Category</label><select class="field" id="tx-cat"><option>food</option><option>transport</option><option>shopping</option><option>health</option><option>entertainment</option><option>utilities</option><option>other</option></select></div>
+        <div class="form-row"><label class="field-lbl">Date</label><input class="field" type="date" id="tx-date"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="hideModal('add-tx-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addTransaction()">Add Transaction</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Budget Modal -->
+<div class="modal-overlay" id="add-budget-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Add Budget</div>
+      <button class="close-btn" onclick="hideModal('add-budget-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row full"><label class="field-lbl">Card</label><select class="field"><option>All Cards (Global)</option><option>HSBC Platinum</option><option>Sampath Visa</option></select></div>
+        <div class="form-row"><label class="field-lbl">Category</label><select class="field"><option>🍔 Food & Dining</option><option>🚗 Transport</option><option>🛍️ Shopping</option><option>💊 Health</option><option>🎬 Entertainment</option><option>⚡ Utilities</option></select></div>
+        <div class="form-row"><label class="field-lbl">Period</label><select class="field"><option>Monthly</option><option>Weekly</option><option>Statement</option></select></div>
+        <div class="form-row"><label class="field-lbl">Limit (LKR)</label><input class="field" type="number" placeholder="25000"></div>
+        <div class="form-row"><label class="field-lbl">Alert at %</label><input class="field" type="number" placeholder="80" min="1" max="100"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="hideModal('add-budget-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="hideModal('add-budget-modal')">Save Budget</button>
+    </div>
+  </div>
+</div>
+
+<!-- Invite Modal -->
+<div class="modal-overlay" id="invite-modal">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Invite Family Member</div>
+      <button class="close-btn" onclick="hideModal('invite-modal')">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-row full"><label class="field-lbl">Email Address</label><input class="field" placeholder="member@email.com"></div>
+        <div class="form-row full"><label class="field-lbl">Role</label>
+          <select class="field"><option>Member – can add transactions to shared cards</option><option>Viewer – read-only access</option><option>Admin – can edit cards and budgets</option></select>
+        </div>
+      </div>
+      <div class="text-muted fs11 mt-16">They'll receive an email with a link to join your household.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="hideModal('invite-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="hideModal('invite-modal')">Send Invite</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══ DATA ══
+const CARDS = [
+  {id:'c1',bank:'HSBC',name:'Platinum Visa',nick:'Daily card',last4:'4521',network:'VISA',color:'#0f3460',limit:150000,balance:58650,stmtDay:25,dueDay:15,emoji:'💳'},
+  {id:'c2',bank:'Sampath',name:'World Mastercard',nick:'Online shopping',last4:'8832',network:'MC',color:'#134e4a',limit:100000,balance:72400,stmtDay:20,dueDay:10,emoji:'💳'},
+  {id:'c3',bank:'BOC',name:'Classic Visa',nick:'Backup',last4:'1190',network:'VISA',color:'#334155',limit:75000,balance:20600,stmtDay:1,dueDay:20,emoji:'💳'},
+];
+
+const CAT_CONFIG = {
+  food:          {label:'Food & Dining',color:'#f97316',bg:'rgba(249,115,22,0.12)',emoji:'🍔'},
+  transport:     {label:'Transport',color:'#3b82f6',bg:'rgba(59,130,246,0.12)',emoji:'🚗'},
+  shopping:      {label:'Shopping',color:'#8b5cf6',bg:'rgba(139,92,246,0.12)',emoji:'🛍️'},
+  health:        {label:'Health',color:'#22d3a0',bg:'rgba(34,211,160,0.12)',emoji:'💊'},
+  entertainment: {label:'Entertainment',color:'#f59e0b',bg:'rgba(245,158,11,0.12)',emoji:'🎬'},
+  utilities:     {label:'Utilities',color:'#6b7280',bg:'rgba(107,114,128,0.12)',emoji:'⚡'},
+  other:         {label:'Other',color:'#9ca3af',bg:'rgba(156,163,175,0.12)',emoji:'📦'},
+};
+
+const TRANSACTIONS = [
+  {id:'t1',date:'2025-04-07',merchant:'Pizza Hut Colombo',desc:'Delivery',cat:'food',card:'c1',amount:2850,type:'debit',source:'shortcut'},
+  {id:'t2',date:'2025-04-07',merchant:'PickMe',desc:'Airport ride',cat:'transport',card:'c2',amount:1200,type:'debit',source:'shortcut'},
+  {id:'t3',date:'2025-04-06',merchant:'Keells Super',desc:'Grocery',cat:'shopping',card:'c1',amount:4320,type:'debit',source:'manual'},
+  {id:'t4',date:'2025-04-06',merchant:'Netflix',desc:'Monthly sub',cat:'entertainment',card:'c2',amount:1500,type:'debit',source:'shortcut'},
+  {id:'t5',date:'2025-04-05',merchant:'HSBC Payment',desc:'Card payment',cat:'other',card:'c1',amount:15000,type:'credit',source:'manual'},
+  {id:'t6',date:'2025-04-05',merchant:'Lanka Hospitals',desc:'Consultation',cat:'health',card:'c1',amount:3500,type:'debit',source:'shortcut'},
+  {id:'t7',date:'2025-04-04',merchant:'Shell Station',desc:'Fuel',cat:'transport',card:'c3',amount:5600,type:'debit',source:'shortcut'},
+  {id:'t8',date:'2025-04-04',merchant:'Dialog',desc:'Mobile bill',cat:'utilities',card:'c2',amount:2800,type:'debit',source:'manual'},
+  {id:'t9',date:'2025-04-03',merchant:'Odel',desc:'Clothing',cat:'shopping',card:'c1',amount:8900,type:'debit',source:'shortcut'},
+  {id:'t10',date:'2025-04-03',merchant:'McDonald\'s',desc:'Lunch',cat:'food',card:'c3',amount:980,type:'debit',source:'shortcut'},
+  {id:'t11',date:'2025-04-02',merchant:'Uber',desc:'Office commute',cat:'transport',card:'c2',amount:750,type:'debit',source:'shortcut'},
+  {id:'t12',date:'2025-04-01',merchant:'Spotify',desc:'Monthly sub',cat:'entertainment',card:'c1',amount:699,type:'debit',source:'shortcut'},
+];
+
+const BUDGETS = [
+  {cat:'food',limit:30000,spent:18450,color:'#f97316'},
+  {cat:'transport',limit:15000,spent:12800,color:'#3b82f6'},
+  {cat:'shopping',limit:25000,spent:22100,color:'#8b5cf6'},
+  {cat:'entertainment',limit:5000,spent:2199,color:'#f59e0b'},
+  {cat:'utilities',limit:8000,spent:2800,color:'#6b7280'},
+  {cat:'health',limit:10000,spent:3500,color:'#22d3a0'},
+];
+
+const MEMBERS = [
+  {name:'John Dharshana',email:'john@example.com',role:'owner',initials:'JD',color:'#7c6cfa'},
+  {name:'Nisha Dharshana',email:'nisha@example.com',role:'admin',initials:'ND',color:'#22d3a0'},
+  {name:'Kavya D.',email:'kavya@example.com',role:'member',initials:'KD',color:'#f5a623'},
+];
+
+const API_KEY_REAL = 'a3f8b2e9c1d4g7h6j5k0m8n2p4q7r1s3';
+
+// ══ NAVIGATION ══
+let currentPage = 'dashboard';
+const BREADCRUMBS = {
+  dashboard:'Dashboard',cards:'Cards',budgets:'Budgets',transactions:'Transactions',
+  analytics:'Analytics',livefeed:'Live Feed',statement:'Statement',
+  family:'Family',shortcut:'Shortcut Helper',settings:'Settings'
+};
+
+function navTo(page) {
+  document.querySelectorAll('.nav-item').forEach(i=>i.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+  if(navItem) navItem.classList.add('active');
+  const pageEl = document.getElementById(`page-${page}`);
+  if(pageEl) pageEl.classList.add('active');
+  document.getElementById('breadcrumb-text').textContent = BREADCRUMBS[page]||page;
+  currentPage = page;
+}
+
+document.querySelectorAll('.nav-item[data-page]').forEach(item=>{
+  item.addEventListener('click',()=>navTo(item.dataset.page));
+});
+
+// ══ RENDER HELPERS ══
+function fmtLKR(n){return'LKR '+Math.abs(n).toLocaleString('en-LK',{minimumFractionDigits:0,maximumFractionDigits:0})}
+function catBadge(cat){const c=CAT_CONFIG[cat]||CAT_CONFIG.other;return`<span class="cat-badge" style="background:${c.bg};color:${c.color}">${c.emoji} ${c.label}</span>`}
+function utilColor(pct){return pct<30?'#22d3a0':pct<70?'#f5a623':'#f4566a'}
+function daysUntilDue(dueDay){const today=new Date();let d=new Date(today.getFullYear(),today.getMonth(),dueDay);if(d<today)d=new Date(today.getFullYear(),today.getMonth()+1,dueDay);return Math.ceil((d-today)/(1000*60*60*24))}
+function getCardById(id){return CARDS.find(c=>c.id===id)||{name:'Unknown',bank:''}}
+
+// ══ DASHBOARD ══
+function renderDash(){
+  // Recent tx
+  const tbody=document.getElementById('dash-tx-body');
+  tbody.innerHTML=TRANSACTIONS.slice(0,6).map(tx=>{
+    const card=getCardById(tx.card_id||tx.card);
+    const debit=tx.type==='debit';
+    return`<tr>
+      <td><div class="tx-merchant">${tx.merchant}</div><div class="tx-desc">${tx.desc}</div></td>
+      <td>${catBadge(tx.cat)}</td>
+      <td><span class="text-muted fs12">${card.bank}···${card.last4}</span></td>
+      <td class="tx-amount ${tx.type}">${debit?'-':'+'}${fmtLKR(tx.amount)}</td>
+    </tr>`
+  }).join('');
+
+  // Mini cards
+  document.getElementById('dash-cards-mini').innerHTML=CARDS.map(c=>{
+    const avail=c.limit-c.balance;
+    const pct=Math.round((c.balance/c.limit)*100);
+    return`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:8px;height:8px;border-radius:50%;background:${c.color};flex-shrink:0"></div>
+      <div style="flex:1;min-width:0"><div class="fw600 fs13">${c.bank} ${c.name}</div>
+        <div class="pct-bar" style="margin-top:4px"><div class="pct-fill" style="width:${pct}%;background:${utilColor(pct)}"></div></div>
+      </div>
+      <div style="text-align:right;min-width:80px"><div class="mono fs12" style="color:var(--green)">${fmtLKR(avail)}</div><div class="text-muted" style="font-size:10px">available</div></div>
+    </div>`
+  }).join('')+'<div style="padding-top:8px;text-align:center"><span class="card-link fs12" onclick="navTo(\'cards\')">+ Add new card</span></div>';
+
+  // Spend chart
+  const chartEl=document.getElementById('spend-chart');
+  const days=['Mar 9','11','13','15','17','19','21','23','25','27','29','31','Apr 1','3','5','7'];
+  const vals=[1200,3400,900,5200,2100,4800,1800,6200,3100,2900,4400,7200,1500,3800,2600,5400];
+  const max=Math.max(...vals);
+  chartEl.innerHTML=days.map((d,i)=>`
+    <div class="chart-bar-wrap">
+      <div class="chart-bar" style="height:${Math.max(4,(vals[i]/max)*150)}px" data-val="${fmtLKR(vals[i])}"></div>
+      <div class="chart-lbl">${i%3===0?d:''}</div>
+    </div>`).join('');
+}
+
+// ══ CARDS PAGE ══
+function renderCards(){
+  const grid=document.getElementById('cards-grid');
+  grid.innerHTML=CARDS.map(c=>{
+    const avail=c.limit-c.balance;
+    const pct=Math.round((c.balance/c.limit)*100);
+    const days=daysUntilDue(c.dueDay);
+    const grad=`linear-gradient(135deg,${c.color} 0%,${c.color}cc 100%)`;
+    return`<div>
+      <div class="credit-card-vis" style="background:${grad};color:#fff;margin-bottom:14px">
+        <div class="cc-top">
+          <div><div class="cc-bank">${c.bank}</div><div style="font-size:10px;opacity:0.7;margin-top:2px">${c.nick||c.name}</div></div>
+          <div class="cc-network">${c.network}</div>
+        </div>
+        <div class="cc-number">**** **** **** ${c.last4}</div>
+        <div class="cc-bottom">
+          <div><div class="cc-name">Available</div><div style="font-family:var(--mono);font-size:13px;font-weight:600">${fmtLKR(avail)}</div></div>
+          <div class="cc-limit"><div class="cc-limit-val">${fmtLKR(c.limit)}</div><div class="cc-limit-lbl">Limit</div></div>
+        </div>
+        <div class="cc-util-bar"><div class="cc-util-fill" style="width:${pct}%;background:${pct>70?'#f4566a':pct>40?'#f5a623':'rgba(255,255,255,0.8)'}"></div></div>
+      </div>
+      <div class="card-item-detail">
+        <div class="card-item-header">
+          <div class="card-emoji">${c.emoji}</div>
+          <div class="card-info"><div class="card-info-name">${c.name}</div><div class="card-info-bank">${c.bank} Bank</div></div>
+          <span class="status-pill" style="background:${days<=7?'var(--red-bg)':'var(--bg4)'};color:${days<=7?'var(--red)':'var(--text3)'}">Due in ${days}d</span>
+        </div>
+        <div class="card-stats">
+          <div class="cs-item"><label>Balance</label><p style="color:var(--red)">${fmtLKR(c.balance)}</p></div>
+          <div class="cs-item"><label>Available</label><p style="color:var(--green)">${fmtLKR(avail)}</p></div>
+          <div class="cs-item"><label>Limit</label><p>${fmtLKR(c.limit)}</p></div>
+          <div class="cs-item"><label>Utilization</label><p style="color:${utilColor(pct)}">${pct}%</p></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span class="text-muted fs11">Utilization</span>
+            <span class="fs11" style="color:${utilColor(pct)}">${pct}%</span>
+          </div>
+          <div class="util-bar"><div class="util-fill" style="width:${pct}%;background:${utilColor(pct)}"></div></div>
+        </div>
+        <div class="flex gap-8">
+          <button class="btn" style="flex:1;justify-content:center" onclick="showModal('add-tx-modal')">+ Add Tx</button>
+          <button class="btn" style="flex:1;justify-content:center">View Details</button>
+        </div>
+      </div>
+    </div>`
+  }).join('')+`<div onclick="showModal('add-card-modal')" style="border:1px dashed var(--border2);border-radius:var(--card-r);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;min-height:200px;cursor:pointer;color:var(--text3);transition:all 0.2s" onmouseover="this.style.borderColor='var(--accent)';this.style.color='var(--accent)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text3)'">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="24" height="24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span class="fs13">Add New Card</span>
+  </div>`;
+
+  // Comparison table
+  document.getElementById('card-compare-body').innerHTML=CARDS.map(c=>{
+    const avail=c.limit-c.balance;
+    const pct=Math.round((c.balance/c.limit)*100);
+    const days=daysUntilDue(c.dueDay);
+    return`<tr>
+      <td><div class="fw600">${c.bank} ${c.name}</div><div class="text-muted fs11">····${c.last4}</div></td>
+      <td class="mono">${fmtLKR(c.limit)}</td>
+      <td class="mono" style="color:var(--red)">${fmtLKR(c.balance)}</td>
+      <td class="mono" style="color:var(--green)">${fmtLKR(avail)}</td>
+      <td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;max-width:80px"><div class="pct-bar"><div class="pct-fill" style="width:${pct}%;background:${utilColor(pct)}"></div></div></div><span style="font-size:12px;color:${utilColor(pct)}">${pct}%</span></div></td>
+      <td style="color:${days<=7?'var(--red)':'var(--text2)'}">Apr ${c.dueDay} (${days}d)</td>
+    </tr>`
+  }).join('');
+}
+
+// ══ BUDGETS ══
+function renderBudgets(){
+  document.getElementById('budget-list').innerHTML=BUDGETS.map(b=>{
+    const c=CAT_CONFIG[b.cat]||CAT_CONFIG.other;
+    const pct=Math.min(100,Math.round((b.spent/b.limit)*100));
+    const col=pct>=90?'#f4566a':pct>=70?'#f5a623':b.color;
+    return`<div class="budget-item">
+      <div class="budget-header">
+        <div class="budget-name">${c.emoji} ${c.label}</div>
+        <div class="budget-amounts">${fmtLKR(b.spent)} / ${fmtLKR(b.limit)} <span style="color:${col}"> (${pct}%)</span></div>
+      </div>
+      <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${col}"></div></div>
+    </div>`
+  }).join('');
+}
+
+// ══ TRANSACTIONS ══
+function renderTransactions(){
+  document.getElementById('full-tx-body').innerHTML=TRANSACTIONS.map(tx=>{
+    const card=getCardById(tx.card);
+    const debit=tx.type==='debit';
+    const srcLabel=tx.source==='shortcut'?'📱 Shortcut':'✋ Manual';
+    return`<tr>
+      <td class="text-muted fs12">${tx.date}</td>
+      <td><div class="fw600 fs13">${tx.merchant}</div><div class="text-muted" style="font-size:11px">${tx.desc}</div></td>
+      <td>${catBadge(tx.cat)}</td>
+      <td><span class="text-muted fs12">${card.bank} ···${card.last4}</span></td>
+      <td><span class="source-badge">${srcLabel}</span></td>
+      <td class="tx-amount ${tx.type}">${debit?'-':'+'}${fmtLKR(tx.amount)}</td>
+    </tr>`
+  }).join('');
+}
+
+// ══ ANALYTICS ══
+function renderAnalytics(){
+  const months=['Oct','Nov','Dec','Jan','Feb','Mar'];
+  const vals=[48200,71000,94200,67400,32800,58450];
+  const max=Math.max(...vals);
+  document.getElementById('monthly-chart').innerHTML=`<div class="chart-area">`+
+    months.map((m,i)=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.max(4,(vals[i]/max)*150)}px;background:linear-gradient(to top,var(--accent2),var(--accent))" data-val="${fmtLKR(vals[i])}"></div><div class="chart-lbl">${m}</div></div>`).join('')+`</div>`;
+
+  document.getElementById('cat-chart').innerHTML=BUDGETS.map(b=>{
+    const c=CAT_CONFIG[b.cat]||CAT_CONFIG.other;
+    const pct=Math.round((b.spent/58450)*100);
+    return`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span class="fs12">${c.emoji} ${c.label}</span><span class="fs12 mono" style="color:${c.color}">${fmtLKR(b.spent)}</span></div><div class="pct-bar" style="height:6px"><div class="pct-fill" style="width:${pct}%;background:${c.color}"></div></div></div>`
+  }).join('');
+
+  const merchants=[
+    {name:'Pizza Hut',amount:8500,cat:'food'},
+    {name:'Keells Super',amount:12400,cat:'shopping'},
+    {name:'PickMe',amount:6200,cat:'transport'},
+    {name:'Uber',amount:5800,cat:'transport'},
+    {name:'Netflix',amount:1500,cat:'entertainment'},
+  ];
+  document.getElementById('merchant-list').innerHTML=merchants.map((m,i)=>{
+    const c=CAT_CONFIG[m.cat]||CAT_CONFIG.other;
+    const pct=Math.round((m.amount/12400)*100);
+    return`<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px"><div class="text-muted mono" style="min-width:16px;font-size:12px">${i+1}</div><div style="flex:1"><div style="display:flex;justify-content:space-between;margin-bottom:3px"><span class="fs13 fw600">${m.name}</span><span class="mono fs12" style="color:${c.color}">${fmtLKR(m.amount)}</span></div><div class="pct-bar"><div class="pct-fill" style="width:${pct}%;background:${c.color}"></div></div></div></div>`
+  }).join('');
+}
+
+// ══ LIVE FEED ══
+function renderLiveFeed(){
+  const feedItems=[
+    {time:'2 min ago',merchant:'Pizza Hut',amount:2850,cat:'food',card:'HSBC ···4521'},
+    {time:'18 min ago',merchant:'PickMe',amount:1200,cat:'transport',card:'Sampath ···8832'},
+    {time:'1 hr ago',merchant:'Keells Super',amount:4320,cat:'shopping',card:'HSBC ···4521'},
+    {time:'3 hrs ago',merchant:'Netflix',amount:1500,cat:'entertainment',card:'Sampath ···8832'},
+    {time:'5 hrs ago',merchant:'Lanka Hospitals',amount:3500,cat:'health',card:'HSBC ···4521'},
+    {time:'Yesterday',merchant:'Shell Station',amount:5600,cat:'transport',card:'BOC ···1190'},
+  ];
+  document.getElementById('live-feed-list').innerHTML=feedItems.map(f=>{
+    const c=CAT_CONFIG[f.cat]||CAT_CONFIG.other;
+    return`<div class="feed-item">
+      <div class="feed-icon" style="background:${c.bg}">${c.emoji}</div>
+      <div class="feed-content">
+        <div class="feed-title">${f.merchant}</div>
+        <div class="feed-meta">${f.card} · ${f.time}</div>
+      </div>
+      <div class="feed-amount">-${fmtLKR(f.amount)}</div>
+    </div>`
+  }).join('');
+}
+
+// ══ STATEMENT ══
+function renderStatement(){
+  document.getElementById('statement-cards').innerHTML=CARDS.map(c=>{
+    const pct=Math.round((c.balance/c.limit)*100);
+    const days=daysUntilDue(c.dueDay);
+    const statusColor=pct>70?'#f4566a':pct>40?'#f5a623':'#22d3a0';
+    const stmtSpend=TRANSACTIONS.filter(t=>t.card===c.id&&t.type==='debit').reduce((s,t)=>s+t.amount,0);
+    const credits=TRANSACTIONS.filter(t=>t.card===c.id&&t.type==='credit').reduce((s,t)=>s+t.amount,0);
+    return`<div class="stmt-card">
+      <div class="stmt-card-head">
+        <div class="stmt-card-name">💳 ${c.bank} ${c.name} <span class="text-muted" style="font-size:12px">···${c.last4}</span></div>
+        <div class="flex gap-8">
+          <span class="status-pill" style="background:${pct>70?'var(--red-bg)':'var(--green-bg)'};color:${statusColor}">${pct}% used</span>
+          <span class="status-pill" style="background:${days<=7?'var(--red-bg)':'var(--bg4)'};color:${days<=7?'var(--red)':'var(--text3)'}">Due in ${days}d</span>
+        </div>
+      </div>
+      <div class="stmt-grid">
+        <div class="stmt-item"><label>Credit Limit</label><p>${fmtLKR(c.limit)}</p></div>
+        <div class="stmt-item"><label>Opening Balance</label><p>${fmtLKR(c.balance-stmtSpend+credits)}</p></div>
+        <div class="stmt-item"><label>Spend This Period</label><p style="color:var(--red)">${fmtLKR(stmtSpend)}</p></div>
+        <div class="stmt-item"><label>Credits / Payments</label><p style="color:var(--green)">${fmtLKR(credits)}</p></div>
+        <div class="stmt-item"><label>Closing Balance</label><p class="fw600">${fmtLKR(c.balance)}</p></div>
+        <div class="stmt-item"><label>Available Credit</label><p style="color:var(--green)">${fmtLKR(c.limit-c.balance)}</p></div>
+        <div class="stmt-item"><label>Min. Payment Due</label><p style="color:var(--amber)">${fmtLKR(c.balance*0.1)}</p></div>
+        <div class="stmt-item"><label>Payment Due Date</label><p style="color:${days<=7?'var(--red)':'var(--text)'}">Apr ${c.dueDay}, 2025</p></div>
+        <div class="stmt-item"><label>Statement Day</label><p>Mar ${c.stmtDay}</p></div>
+      </div>
+      <div style="margin-top:14px"><div class="pct-bar" style="height:8px;border-radius:4px"><div class="pct-fill" style="width:${pct}%;background:${utilColor(pct)};border-radius:4px"></div></div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px"><span class="text-muted fs11">LKR 0</span><span class="fs11" style="color:${utilColor(pct)}">${fmtLKR(c.balance)} used</span><span class="text-muted fs11">${fmtLKR(c.limit)}</span></div>
+      </div>
+    </div>`
+  }).join('');
+}
+
+// ══ FAMILY ══
+function renderFamily(){
+  document.getElementById('family-members').innerHTML=MEMBERS.map(m=>{
+    const roleCfg={owner:{bg:'rgba(124,108,250,0.15)',color:'#7c6cfa',label:'Owner'},admin:{bg:'rgba(245,166,35,0.15)',color:'#f5a623',label:'Admin'},member:{bg:'rgba(34,211,160,0.15)',color:'#22d3a0',label:'Member'}};
+    const r=roleCfg[m.role]||roleCfg.member;
+    return`<div class="member-item">
+      <div class="member-avatar" style="background:${m.color}22;color:${m.color}">${m.initials}</div>
+      <div class="member-info"><div class="member-name">${m.name}</div><div class="member-email">${m.email}</div></div>
+      <span class="role-badge" style="background:${r.bg};color:${r.color}">${r.label}</span>
+      ${m.role!=='owner'?'<button class="btn" style="font-size:11px">Manage</button>':''}
+    </div>`
+  }).join('');
+
+  // Family spend chart
+  const spends=[{name:'John',amount:38450,color:'#7c6cfa'},{name:'Nisha',amount:14200,color:'#22d3a0'},{name:'Kavya',amount:5800,color:'#f5a623'}];
+  const maxS=Math.max(...spends.map(s=>s.amount));
+  document.getElementById('family-spend-chart').innerHTML=spends.map(s=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <div style="min-width:48px;font-size:12px;color:var(--text2)">${s.name}</div>
+      <div style="flex:1"><div class="pct-bar" style="height:8px"><div class="pct-fill" style="width:${Math.round((s.amount/maxS)*100)}%;background:${s.color}"></div></div></div>
+      <div class="mono fs12">${fmtLKR(s.amount)}</div>
+    </div>`).join('');
+
+  document.getElementById('shared-cards-list').innerHTML=CARDS.map(c=>`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${c.color}"></div>
+      <div style="flex:1;font-size:13px">${c.bank} ${c.name}</div>
+      <div class="toggle ${c.id!=='c3'?'on':''}" onclick="this.classList.toggle('on')"></div>
+    </div>`).join('');
+}
+
+// ══ SHORTCUT HELPER ══
+function renderShortcut(){
+  const steps=[
+    {title:'Get your API key',desc:'Copy your unique API key below. Keep it secret — it authenticates your iPhone Shortcuts.'},
+    {title:'Get your Card ID',desc:'Each card has a unique ID. Find yours in the "Your Card IDs" panel on the right. Copy the ID for the card you want to track.'},
+    {title:'Open iPhone Shortcuts app',desc:'Tap (+) to create a new Shortcut. Name it "Log Credit Spend".'},
+    {title:'Add a "Get Contents of URL" action',desc:'Set method to POST, URL to your app URL + /api/ingest. Add a JSON body:',code:'{\n  "api_key": "YOUR_API_KEY",\n  "card_id": "YOUR_CARD_ID",\n  "amount": [Ask for Input: number],\n  "description": [Ask for Input: text],\n  "category": [Choose from List],\n  "tx_type": "debit",\n  "currency": "LKR"\n}'},
+    {title:'Add to Home Screen',desc:'Tap the share icon and choose "Add to Home Screen". Now you can log a transaction with one tap from your iPhone home screen.'},
+    {title:'Test it',desc:'Use the Test Endpoint panel on the right to verify your setup is working before using in real life.'},
+  ];
+  document.getElementById('shortcut-steps').innerHTML=steps.map((s,i)=>`
+    <div class="shortcut-step">
+      <div class="step-num">${i+1}</div>
+      <div class="step-content">
+        <div class="step-title">${s.title}</div>
+        <div class="step-desc">${s.desc}</div>
+        ${s.code?`<div class="code-block">${s.code.replace(/\n/g,'<br>')}</div>`:''}
+      </div>
+    </div>`).join('');
+
+  document.getElementById('card-ids-list').innerHTML=CARDS.map(c=>`
+    <div style="margin-bottom:12px">
+      <div class="fs12 fw600 mb-8">${c.bank} ${c.name} ···${c.last4}</div>
+      <div class="api-key-row">
+        <span class="api-key-val" style="font-size:10px">card_${c.id}_${c.last4}xxxx</span>
+        <button class="btn" onclick="navigator.clipboard.writeText('card_${c.id}')">Copy</button>
+      </div>
+    </div>`).join('');
+}
+
+// ══ MODAL ══
+let selectedColor='#1a1a2e';
+function showModal(id){document.getElementById(id).classList.add('open')}
+function hideModal(id){document.getElementById(id).classList.remove('open')}
+function selectColor(el){document.querySelectorAll('.color-opt').forEach(o=>o.classList.remove('sel'));el.classList.add('sel');selectedColor=el.dataset.color}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
+
+// ══ ADD CARD ══
+function addCard(){
+  const bank=document.getElementById('new-bank').value.trim();
+  const name=document.getElementById('new-name').value.trim();
+  const last4=document.getElementById('new-last4').value.trim();
+  const limit=parseFloat(document.getElementById('new-limit').value)||100000;
+  if(!bank||!name){alert('Please fill bank name and card name.');return}
+  CARDS.push({id:'c'+Date.now(),bank,name,nick:document.getElementById('new-nick').value,last4:last4||'0000',network:document.getElementById('new-network').value.toUpperCase(),color:selectedColor,limit,balance:0,stmtDay:parseInt(document.getElementById('new-stmt-day').value)||25,dueDay:parseInt(document.getElementById('new-due-day').value)||15,emoji:'💳'});
+  hideModal('add-card-modal');
+  renderCards();renderDash();
+  ['new-bank','new-name','new-nick','new-last4','new-limit','new-stmt-day','new-due-day'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ══ ADD TX ══
+function addTransaction(){
+  const amount=parseFloat(document.getElementById('tx-amount').value);
+  const desc=document.getElementById('tx-desc').value.trim();
+  if(!amount||!desc){alert('Please fill amount and description.');return}
+  TRANSACTIONS.unshift({id:'t'+Date.now(),date:document.getElementById('tx-date').value||new Date().toISOString().split('T')[0],merchant:desc,desc:'',cat:document.getElementById('tx-cat').value,card:'c1',amount,type:document.getElementById('tx-type').value,source:'manual'});
+  hideModal('add-tx-modal');
+  renderTransactions();renderDash();
+}
+
+// ══ API KEY ══
+let apiRevealed=false;
+function toggleApiKey(){
+  apiRevealed=!apiRevealed;
+  document.getElementById('api-key-display').textContent=apiRevealed?API_KEY_REAL:'••••••••••••••••••••••••••••••••';
+  document.getElementById('api-key-btn').textContent=apiRevealed?'Hide':'Reveal';
+}
+function copyApiKey(){
+  navigator.clipboard.writeText(API_KEY_REAL).then(()=>{const btn=document.querySelector('.api-key-row .btn:last-child');btn.textContent='Copied!';setTimeout(()=>btn.textContent='Copy',1500)});
+}
+
+// ══ TEST ENDPOINT ══
+function testEndpoint(){
+  const r=document.getElementById('test-result');
+  r.style.display='block';r.style.color='var(--amber)';r.textContent='⏳ Sending test transaction…';
+  setTimeout(()=>{r.style.color='var(--green)';r.textContent='✓ Success! Test transaction received. Check Live Feed.';},1800);
+}
+
+function swapTab(el){el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active')}
+
+// ══ INIT ══
+document.addEventListener('DOMContentLoaded',()=>{
+  renderDash();
+  renderCards();
+  renderBudgets();
+  renderTransactions();
+  renderAnalytics();
+  renderLiveFeed();
+  renderStatement();
+  renderFamily();
+  renderShortcut();
+  // Set today's date in tx form
+  document.getElementById('tx-date').value=new Date().toISOString().split('T')[0];
+});
+</script>
+</body>
+</html>

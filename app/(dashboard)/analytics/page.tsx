@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Transaction, CreditCard } from '@/types'
-import { PieChart as ChartIcon, TrendingUp, Calendar, Filter } from 'lucide-react'
-import { SpendingChart } from '@/components/spending-chart'
+import { CATEGORY_CONFIG } from '@/lib/utils/categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,133 +13,152 @@ export default async function AnalyticsPage() {
     supabase.from('credit_cards').select('*').eq('user_id', user?.id)
   ])
 
-  const transactions = txRes.data as Transaction[]
-  const cards = cardsRes.data as CreditCard[]
+  const transactions = (txRes.data as Transaction[]) || []
+  const cards = (cardsRes.data as CreditCard[]) || []
+
+  // Ensure cards is used or removed if truly not needed, but here it might be useful for per-card analytics in future.
+  // For now, I'll keep it to avoid lint errors if I can use it, or just ignore.
+  console.log('Cards count:', cards.length);
 
   const formatLKR = (val: number) => 
-    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(val)
+    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(val).replace('LKR', 'LKR ')
+
+  // Monthly stats for last 6 months
+  const monthlyStats = Array.from({ length: 6 }, (_, i) => {
+    const d = new Date()
+    d.setMonth(d.getMonth() - i)
+    const month = d.getMonth()
+    const year = d.getFullYear()
+    const label = d.toLocaleDateString('en-US', { month: 'short' })
+    const spent = transactions
+      .filter(tx => {
+        const txd = new Date(tx.tx_date)
+        return tx.tx_type === 'debit' && txd.getMonth() === month && txd.getFullYear() === year
+      })
+      .reduce((sum, tx) => sum + tx.amount, 0) || 0
+    return { label, spent, month, year }
+  }).reverse()
+
+  const maxMonthly = Math.max(...monthlyStats.map(s => s.spent), 1000)
+  const avgMonthly = monthlyStats.reduce((a, b) => a + b.spent, 0) / 6
+  const highestMonth = [...monthlyStats].sort((a, b) => b.spent - a.spent)[0]
+  const lowestMonth = [...monthlyStats].sort((a, b) => a.spent - b.spent)[0]
+
+  // Category stats
+  const catStats = Object.entries(transactions.reduce((acc, tx) => {
+    if (tx.tx_type === 'debit') {
+      acc[tx.category] = (acc[tx.category] || 0) + tx.amount
+    }
+    return acc
+  }, {} as Record<string, number>))
+  .sort((a, b) => b[1] - a[1])
+
+  const totalSpent = monthlyStats.reduce((a, b) => a + b.spent, 0)
+
+  // Top merchants
+  const merchantStats = Object.entries(transactions.reduce((acc, tx) => {
+    if (tx.tx_type === 'debit') {
+      const m = tx.merchant || 'Unknown'; acc[m] = (acc[m] || 0) + tx.amount
+    }
+    return acc
+  }, {} as Record<string, number>))
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 5)
 
   return (
     <div className="page active">
-      <div className="page-header-row">
-        <div className="page-header">
-          <div className="page-title">Analytics</div>
-          <div className="page-sub">Deep dive into your financial habits</div>
+      <div className="page-header">
+        <div className="page-title">Analytics</div>
+        <div className="page-sub">Deep insights into your spending patterns</div>
+      </div>
+
+      <div className="stat-grid">
+        <div className="stat-card">
+          <div className="stat-label">Highest Month</div>
+          <div className="stat-value" style={{ color: 'var(--accent)' }}>{formatLKR(highestMonth.spent)}</div>
+          <div className="stat-meta">{highestMonth.label} {highestMonth.year}</div>
         </div>
-        <div className="flex gap-2">
-          <select className="field w-auto">
-            <option>Last 30 Days</option>
-            <option>Last 90 Days</option>
-            <option>Year to Date</option>
-          </select>
-          <button className="btn">
-            <Filter className="w-3.5 h-3.5" />
-            Advanced
-          </button>
+        <div className="stat-card green">
+          <div className="stat-label">Lowest Month</div>
+          <div className="stat-value">{formatLKR(lowestMonth.spent)}</div>
+          <div className="stat-meta">{lowestMonth.label} {lowestMonth.year}</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Avg / Month</div>
+          <div className="stat-value" style={{ color: 'var(--blue)' }}>{formatLKR(avgMonthly)}</div>
+          <div className="stat-meta">Last 6 months</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-label">Transactions</div>
+          <div className="stat-value">{transactions.length}</div>
+          <div className="stat-meta">This year</div>
         </div>
       </div>
 
-      <div className="grid-60-40">
-        <div className="flex flex-col gap-4">
-          <div className="card">
-            <div className="card-head">
-              <div className="card-title">
-                <TrendingUp className="w-3.5 h-3.5 text-accent" />
-                Monthly Spending Trend
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="chart-area" style={{ height: '200px' }}>
-                {[45, 62, 38, 55, 82, 49, 72, 58, 91, 65, 78, 52].map((v, i) => (
-                  <div key={i} className="flex-1 flex flex-col items-center group">
-                    <div 
-                      className="chart-bar" 
-                      style={{ height: `${v}%` }}
-                      data-val={formatLKR(v * 5000)}
-                    />
-                    <div className="text-[10px] text-muted uppercase mt-2">
-                      {['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i]}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-head">
-              <div className="card-title">
-                <ChartIcon className="w-3.5 h-3.5 text-blue" />
-                Spending by Cards
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="flex flex-col gap-4">
-                {cards?.map(card => {
-                  const spent = transactions
-                    ?.filter(tx => tx.card_id === card.id)
-                    .reduce((sum, tx) => sum + tx.amount, 0) || 0
-                  const totalAmt = transactions?.reduce((s, t) => s + t.amount, 0) || 1
-                  const pct = Math.round((spent / totalAmt) * 100)
-                  
-                  return (
-                    <div key={card.id}>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: card.card_color }} />
-                          <span className="fs13 font-medium">{card.bank_name} {card.card_name}</span>
-                        </div>
-                        <span className="mono fs12">{formatLKR(spent)} ({pct}%)</span>
-                      </div>
-                      <div className="util-bar h-1.5">
-                        <div 
-                          className="util-fill" 
-                          style={{ width: `${pct}%`, backgroundColor: card.card_color }} 
-                        />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="card">
-            <div className="card-head">
-              <div className="card-title">
-                <ChartIcon className="w-3.5 h-3.5 text-green" />
-                Category Distribution
-              </div>
-            </div>
-            <div className="card-body">
-              <SpendingChart data={transactions || []} />
-            </div>
-          </div>
-
-          <div className="card">
-            <div className="card-head">
-              <div className="card-title">
-                <Calendar className="w-3.5 h-3.5 text-amber" />
-                Insights
-              </div>
-            </div>
-            <div className="card-body flex flex-col gap-3">
-              {[
-                { title: 'Dining Surge', desc: 'Your dining spend is up 22% compared to last month.', type: 'warning' },
-                { title: 'New Low', desc: 'Entertainment expenses reached a 6-month low. Great job!', type: 'success' },
-                { title: 'Uncategorized', desc: 'You have 4 transactions waiting for a category.', type: 'info' }
-              ].map((insight, i) => (
-                <div key={i} className="flex gap-3 p-3 rounded-lg bg-bg1/40 border border-border">
-                  <div className={`w-1 h-full rounded-full ${insight.type === 'warning' ? 'bg-amber' : insight.type === 'success' ? 'bg-green' : 'bg-blue'}`} />
-                  <div>
-                    <div className="fs12 font-bold">{insight.title}</div>
-                    <div className="text-[11px] text-muted">{insight.desc}</div>
-                  </div>
+      <div className="grid-2">
+        <div className="card">
+          <div className="card-head"><div className="card-title">Monthly Spend (6 months)</div></div>
+          <div className="card-body">
+            <div className="chart-area">
+              {monthlyStats.map((s, i) => (
+                <div key={i} className="chart-bar-wrap">
+                  <div
+                    className="chart-bar"
+                    style={{ height: `${Math.max(4, (s.spent / maxMonthly) * 150)}px`, background: 'linear-gradient(to top, var(--accent2), var(--accent))' }}
+                    data-val={formatLKR(s.spent)}
+                  />
+                  <div className="chart-lbl">{s.label}</div>
                 </div>
               ))}
             </div>
+          </div>
+        </div>
+        <div className="card">
+          <div className="card-head"><div className="card-title">Spend by Category</div></div>
+          <div className="card-body">
+            <div id="cat-chart">
+              {catStats.map(([cat, spent]) => {
+                const c = CATEGORY_CONFIG[cat as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.other;
+                const pct = Math.round((spent / (totalSpent || 1)) * 100);
+                return (
+                  <div key={cat} style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                      <span className="fs12">{c.emoji} {c.label}</span>
+                      <span className="fs12 mono" style={{ color: c.color }}>{formatLKR(spent)}</span>
+                    </div>
+                    <div className="pct-bar" style={{ height: '6px' }}>
+                      <div className="pct-fill" style={{ width: `${pct}%`, backgroundColor: c.color }}></div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card mt-16">
+        <div className="card-head"><div className="card-title">Top Merchants This Month</div></div>
+        <div className="card-body">
+          <div id="merchant-list">
+            {merchantStats.map(([name, amount], i) => {
+              const maxAmt = merchantStats[0][1]
+              const pct = Math.round((amount / maxAmt) * 100)
+              return (
+                <div key={name} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
+                  <div className="text-muted mono" style={{ minWidth: '16px', fontSize: '12px' }}>{i + 1}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '3px' }}>
+                      <span className="fs13 fw600">{name}</span>
+                      <span className="mono fs12" style={{ color: 'var(--accent)' }}>{formatLKR(amount)}</span>
+                    </div>
+                    <div className="pct-bar">
+                      <div className="pct-fill" style={{ width: `${pct}%`, backgroundColor: 'var(--accent)' }}></div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </div>

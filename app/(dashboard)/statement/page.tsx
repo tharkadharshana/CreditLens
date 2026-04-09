@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { CATEGORY_CONFIG } from '@/lib/utils/categories'
-import { FileText, Download, TrendingDown, CreditCard, ChevronLeft, ChevronRight } from 'lucide-react'
-import { SpendingChart } from '@/components/spending-chart'
+import { Transaction, CreditCard } from '@/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -9,123 +7,77 @@ export default async function StatementPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
   
-  // For now, default to current month
-  const now = new Date()
-  const currentMonth = now.getMonth()
-  const currentYear = now.getFullYear()
-  const monthName = now.toLocaleString('default', { month: 'long' })
+  const [cardsRes, txRes] = await Promise.all([
+    supabase.from('credit_cards').select('*').eq('user_id', user?.id),
+    supabase.from('transactions').select('*').eq('user_id', user?.id)
+  ])
 
-  const { data: transactions } = await supabase
-    .from('transactions')
-    .select('*, credit_cards(bank_name, last_four)')
-    .eq('user_id', user?.id)
-    .filter('tx_date', 'gte', `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01`)
-    .filter('tx_date', 'lt', `${currentYear}-${String(currentMonth + 2).padStart(2, '0')}-01`)
-    .order('tx_date', { ascending: false })
+  const cards = (cardsRes.data as CreditCard[]) || []
+  const transactions = (txRes.data as Transaction[]) || []
 
-  const totalSpent = transactions?.reduce((sum, tx) => sum + tx.amount, 0) || 0
-  const txCount = transactions?.length || 0
-  
   const formatLKR = (val: number) => 
-    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(val)
+    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(val).replace('LKR', 'LKR ')
 
   return (
     <div className="page active">
       <div className="page-header-row">
         <div className="page-header">
-          <div className="page-title">Monthly Statement</div>
-          <div className="page-sub">Comprehensive financial summary for {monthName} {currentYear}</div>
+          <div className="page-title">Current Statement</div>
+          <div className="page-sub">Your live statement snapshot as of today</div>
         </div>
-        <div className="flex gap-2">
-          <div className="flex gap-1 bg-bg3 p-1 rounded-lg border border-border">
-            <button className="btn px-2 h-7"><ChevronLeft className="w-4 h-4" /></button>
-            <div className="px-3 flex items-center text-[12px] font-bold">{monthName} {currentYear}</div>
-            <button className="btn px-2 h-7" disabled><ChevronRight className="w-4 h-4" /></button>
-          </div>
-          <button className="btn btn-primary">
-            <Download className="w-3.5 h-3.5" />
-            Download PDF
-          </button>
+        <div className="flex gap-8">
+          <select className="field" style={{ width: 'auto' }}>
+            <option>April 2025</option>
+            <option>March 2025</option>
+            <option>February 2025</option>
+          </select>
+          <button className="btn">↓ Download PDF</button>
         </div>
       </div>
 
-      <div className="grid-60-40">
-        <div className="flex flex-col gap-4">
-          <div className="card">
-            <div className="card-head">
-              <div className="card-title">
-                <FileText className="w-3.5 h-3.5 text-accent" />
-                Financial Summary Report
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="grid grid-cols-2 gap-8 py-4">
-                <div className="flex flex-col">
-                  <div className="text-muted fs11 uppercase tracking-widest font-bold mb-2">Total Spending</div>
-                  <div className="text-[28px] font-bold text-accent mono">{formatLKR(totalSpent)}</div>
-                  <div className="text-green fs11 mt-2 flex items-center gap-1 font-bold">
-                    <TrendingDown className="w-3 h-3" />
-                    4.2% lower than last month
-                  </div>
-                </div>
-                <div className="flex flex-col">
-                  <div className="text-muted fs11 uppercase tracking-widest font-bold mb-2">Transaction Volume</div>
-                  <div className="text-[28px] font-bold mono">{txCount} <span className="fs14 text-muted font-normal">items</span></div>
-                  <div className="text-muted fs11 mt-2">{new Set(transactions?.map(tx => tx.card_id)).size} cards processed</div>
-                </div>
-              </div>
+      <div id="statement-cards">
+        {cards.map(c => {
+          const pct = Math.round(((c.current_balance || 0) / c.credit_limit) * 100)
+          // Mocking some statement values as they aren't fully in the DB yet or need complex logic
+          const cardTxs = transactions.filter(t => t.card_id === c.id)
+          const stmtSpend = cardTxs.filter(t => t.tx_type === 'debit').reduce((s, t) => s + t.amount, 0)
+          const credits = cardTxs.filter(t => t.tx_type === 'credit').reduce((s, t) => s + t.amount, 0)
+          const statusColor = pct > 70 ? '#f4566a' : pct > 40 ? '#f5a623' : '#22d3a0'
+          const dueDays = 7 // Mocked
 
-              <div className="border-t border-border mt-6 pt-6">
-                <div className="fs12 font-bold uppercase tracking-widest mb-4">Detailed Breakdown</div>
-                <div className="flex flex-col">
-                  {Object.entries(CATEGORY_CONFIG).map(([key, cat]) => {
-                    const amt = transactions?.filter(tx => tx.category === key).reduce((s, t) => s + t.amount, 0) || 0
-                    if (amt === 0) return null
-                    const pct = Math.round((amt / totalSpent) * 100)
-                    
-                    return (
-                      <div key={key} className="flex justify-between items-center py-3 border-b border-border last:border-0 border-dashed">
-                        <div className="flex items-center gap-3">
-                          <span className="text-xl">{cat.emoji}</span>
-                          <span className="fs13 font-medium">{cat.label}</span>
-                        </div>
-                        <div className="text-right">
-                          <div className="fw600 fs13 mono">{formatLKR(amt)}</div>
-                          <div className="fs11 text-muted">{pct}% of total</div>
-                        </div>
-                      </div>
-                    )
-                  })}
+          return (
+            <div key={c.id} className="stmt-card">
+              <div className="stmt-card-head">
+                <div className="stmt-card-name">💳 {c.bank_name} {c.card_name} <span className="text-muted" style={{ fontSize: '12px' }}>···{c.last_four}</span></div>
+                <div className="flex gap-8">
+                  <span className="status-pill" style={{ background: pct > 70 ? 'var(--red-bg)' : 'var(--green-bg)', color: statusColor }}>{pct}% used</span>
+                  <span className="status-pill" style={{ background: dueDays <= 7 ? 'var(--red-bg)' : 'var(--bg4)', color: dueDays <= 7 ? 'var(--red)' : 'var(--text3)' }}>Due in {dueDays}d</span>
+                </div>
+              </div>
+              <div className="stmt-grid">
+                <div className="stmt-item"><label>Credit Limit</label><p>{formatLKR(c.credit_limit)}</p></div>
+                <div className="stmt-item"><label>Opening Balance</label><p>{formatLKR((c.current_balance || 0) - stmtSpend + credits)}</p></div>
+                <div className="stmt-item"><label>Spend This Period</label><p style={{ color: 'var(--red)' }}>{formatLKR(stmtSpend)}</p></div>
+                <div className="stmt-item"><label>Credits / Payments</label><p style={{ color: 'var(--green)' }}>{formatLKR(credits)}</p></div>
+                <div className="stmt-item"><label>Closing Balance</label><p className="fw600">{formatLKR(c.current_balance || 0)}</p></div>
+                <div className="stmt-item"><label>Available Credit</label><p style={{ color: 'var(--green)' }}>{formatLKR(c.credit_limit - (c.current_balance || 0))}</p></div>
+                <div className="stmt-item"><label>Min. Payment Due</label><p style={{ color: 'var(--amber)' }}>{formatLKR((c.current_balance || 0) * 0.1)}</p></div>
+                <div className="stmt-item"><label>Payment Due Date</label><p style={{ color: dueDays <= 7 ? 'var(--red)' : 'var(--text)' }}>Apr {c.due_day || 15}, 2025</p></div>
+                <div className="stmt-item"><label>Statement Day</label><p>Mar {c.statement_day || 25}</p></div>
+              </div>
+              <div style={{ marginTop: '14px' }}>
+                <div className="pct-bar" style={{ height: '8px', borderRadius: '4px' }}>
+                  <div className="pct-fill" style={{ width: `${Math.min(pct, 100)}%`, backgroundColor: statusColor, borderRadius: '4px' }}></div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
+                  <span className="text-muted fs11">LKR 0</span>
+                  <span className="fs11" style={{ color: statusColor }}>{formatLKR(c.current_balance || 0)} used</span>
+                  <span className="text-muted fs11">{formatLKR(c.credit_limit)}</span>
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-4">
-          <div className="card">
-            <div className="card-head">
-              <div className="card-title">
-                <CreditCard className="w-3.5 h-3.5 text-blue" />
-                Spending by Category
-              </div>
-            </div>
-            <div className="card-body">
-              <SpendingChart data={transactions || []} />
-            </div>
-          </div>
-          
-          <div className="card bg-bg3/50 border-dashed">
-            <div className="card-body p-8 text-center">
-              <div className="w-12 h-12 rounded-full bg-accent/10 text-accent flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-6 h-6" />
-              </div>
-              <div className="fw600 fs14 mb-2">Full Period Logs</div>
-              <p className="fs11 text-muted mb-6 px-4">Access raw CSV export for this statement period including all metadata.</p>
-              <button className="btn w-full justify-center">Export Full CSV</button>
-            </div>
-          </div>
-        </div>
+          )
+        })}
       </div>
     </div>
   )

@@ -10,9 +10,9 @@ export default async function CardsPage() {
   const { data: cards } = await supabase.from('credit_cards').select('*').eq('user_id', user?.id)
 
   const formatLKR = (val: number) => 
-    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(val)
+    new Intl.NumberFormat('en-LK', { style: 'currency', currency: 'LKR', maximumFractionDigits: 0 }).format(val).replace('LKR', 'LKR ')
 
-  const getUtilColor = (p: number) => p < 30 ? '#22d3a0' : p < 70 ? '#f5a623' : '#f4566a'
+  const getUtilColor = (p: number) => p < 30 ? 'var(--green)' : p < 70 ? 'var(--amber)' : 'var(--red)'
 
   return (
     <div className="page active">
@@ -22,7 +22,7 @@ export default async function CardsPage() {
           <div className="page-sub">Manage all your credit cards in one place</div>
         </div>
         <button className="btn btn-primary">
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-[13px] h-[13px]" />
           Add New Card
         </button>
       </div>
@@ -31,14 +31,16 @@ export default async function CardsPage() {
         {cards?.map((card: CreditCard) => {
           const pct = Math.round(((card.current_balance || 0) / card.credit_limit) * 100)
           const avail = card.credit_limit - (card.current_balance || 0)
+          const grad = `linear-gradient(135deg, ${card.card_color} 0%, ${card.card_color}cc 100%)`
           
           return (
             <div key={card.id}>
               <div 
                 className="credit-card-vis" 
                 style={{ 
-                  background: `linear-gradient(135deg, ${card.card_color} 0%, ${card.card_color}cc 100%)`,
-                  color: '#fff'
+                  background: grad,
+                  color: '#fff',
+                  marginBottom: '14px'
                 }}
               >
                 <div className="cc-top">
@@ -54,45 +56,55 @@ export default async function CardsPage() {
                     <div className="cc-name">Available</div>
                     <div style={{ fontFamily: 'var(--mono)', fontSize: '13px', fontWeight: 600 }}>{formatLKR(avail)}</div>
                   </div>
-                  <div className="flex flex-col items-end">
-                    <div className="font-semibold text-[13px]">{formatLKR(card.credit_limit)}</div>
-                    <div className="text-[10px] opacity-70 uppercase tracking-widest">Limit</div>
+                  <div className="cc-limit">
+                    <div className="cc-limit-val">{formatLKR(card.credit_limit)}</div>
+                    <div className="cc-limit-lbl">Limit</div>
                   </div>
                 </div>
                 <div className="cc-util-bar">
                   <div 
                     className="cc-util-fill" 
                     style={{ 
-                      width: `${pct}%`, 
+                      width: `${Math.min(pct, 100)}%`,
                       backgroundColor: pct > 70 ? 'var(--red)' : pct > 40 ? 'var(--amber)' : 'rgba(255,255,255,0.8)' 
                     }} 
                   />
                 </div>
               </div>
 
-              <div className="card-item-detail mt-3.5">
+              <div className="card-item-detail">
                 <div className="card-item-header">
-                  <div className="w-9 h-9 flex items-center justify-center bg-bg4 rounded-lg text-lg">💳</div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-[13px]">{card.card_name}</div>
-                    <div className="text-[11px] text-muted">{card.bank_name} Bank</div>
+                  <div className="card-emoji">💳</div>
+                  <div className="card-info">
+                    <div className="card-info-name">{card.card_name}</div>
+                    <div className="card-info-bank">{card.bank_name} Bank</div>
                   </div>
-                  <span className="status-pill bg-bg4 text-text3">Active</span>
+                  <span className="status-pill" style={{ background: 'var(--bg4)', color: 'var(--text3)' }}>
+                    Active
+                  </span>
                 </div>
-                <div className="card-stats grid grid-cols-2 gap-2 my-2">
+                <div className="card-stats">
                   <div className="cs-item">
-                    <label className="text-[10px] text-muted uppercase tracking-widest">Balance</label>
-                    <p className="text-[14px] font-semibold mono text-red">{formatLKR(card.current_balance || 0)}</p>
+                    <label>Balance</label>
+                    <p style={{ color: 'var(--red)' }}>{formatLKR(card.current_balance || 0)}</p>
                   </div>
                   <div className="cs-item">
-                    <label className="text-[10px] text-muted uppercase tracking-widest">Available</label>
-                    <p className="text-[14px] font-semibold mono text-green">{formatLKR(avail)}</p>
+                    <label>Available</label>
+                    <p style={{ color: 'var(--green)' }}>{formatLKR(avail)}</p>
+                  </div>
+                  <div className="cs-item">
+                    <label>Limit</label>
+                    <p>{formatLKR(card.credit_limit)}</p>
+                  </div>
+                  <div className="cs-item">
+                    <label>Utilization</label>
+                    <p style={{ color: getUtilColor(pct) }}>{pct}%</p>
                   </div>
                 </div>
                 <div>
-                  <div className="flex justify-between mb-1">
-                    <span className="text-muted text-[11px]">Utilization</span>
-                    <span className="text-[11px] font-semibold" style={{ color: getUtilColor(pct) }}>{pct}%</span>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                    <span className="text-muted fs11">Utilization</span>
+                    <span className="fs11" style={{ color: getUtilColor(pct) }}>{pct}%</span>
                   </div>
                   <div className="util-bar">
                     <div 
@@ -101,26 +113,41 @@ export default async function CardsPage() {
                     />
                   </div>
                 </div>
-                <div className="flex gap-2 mt-2">
-                  <button className="btn flex-1 justify-center">Manage</button>
-                  <button className="btn flex-1 justify-center">Statement</button>
+                <div className="flex gap-[8px]">
+                  <button className="btn" style={{ flex: 1, justifyContent: 'center' }}>+ Add Tx</button>
+                  <button className="btn" style={{ flex: 1, justifyContent: 'center' }}>View Details</button>
                 </div>
               </div>
             </div>
           )
         })}
-        <div className="border border-dashed border-border2 rounded-[12px] flex flex-col items-center justify-center gap-2 min-h-[200px] cursor-pointer text-text3 hover:border-accent hover:text-accent transition-all">
-          <Plus className="w-6 h-6" />
-          <span className="text-[13px]">Add New Card</span>
+        <div
+          style={{
+            border: '1px dashed var(--border2)',
+            borderRadius: 'var(--card-r)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'column',
+            gap: '8px',
+            minHeight: '200px',
+            cursor: 'pointer',
+            color: 'var(--text3)',
+            transition: 'all 0.2s'
+          }}
+          className="hover:border-accent hover:text-accent"
+        >
+          <Plus className="w-[24px] h-[24px]" strokeWidth={1.5} />
+          <span className="fs13">Add New Card</span>
         </div>
       </div>
 
-      <div className="card mt-4">
+      <div className="card mt-16">
         <div className="card-head">
           <div className="card-title">Card Comparison</div>
         </div>
         <div className="card-body p-0">
-          <table className="tx-table w-full">
+          <table className="tx-table">
             <thead>
               <tr>
                 <th>Card</th>
@@ -138,15 +165,15 @@ export default async function CardsPage() {
                 return (
                   <tr key={card.id}>
                     <td>
-                      <div className="font-semibold">{card.bank_name} {card.card_name}</div>
-                      <div className="text-muted text-[11px]">····{card.last_four}</div>
+                      <div className="fw600">{card.bank_name} {card.card_name}</div>
+                      <div className="text-muted fs11">····{card.last_four}</div>
                     </td>
                     <td className="mono">{formatLKR(card.credit_limit)}</td>
-                    <td className="mono text-red">{formatLKR(card.current_balance || 0)}</td>
-                    <td className="mono text-green">{formatLKR(avail)}</td>
+                    <td className="mono" style={{ color: 'var(--red)' }}>{formatLKR(card.current_balance || 0)}</td>
+                    <td className="mono" style={{ color: 'var(--green)' }}>{formatLKR(avail)}</td>
                     <td>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 max-w-[80px]">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ flex: 1, maxWidth: '80px' }}>
                           <div className="pct-bar">
                             <div 
                               className="pct-fill" 
@@ -154,7 +181,7 @@ export default async function CardsPage() {
                             />
                           </div>
                         </div>
-                        <span className="text-[12px]" style={{ color: getUtilColor(pct) }}>{pct}%</span>
+                        <span style={{ fontSize: '12px', color: getUtilColor(pct) }}>{pct}%</span>
                       </div>
                     </td>
                     <td className="text-text2">Apr 15 (7d)</td>

@@ -23,15 +23,15 @@ import { useRouter } from 'next/navigation'
 interface NavItemType {
   label: string
   href: string
-  icon?: React.ComponentType<{ className?: string }>
-  iconComponent?: React.ComponentType<{ className?: string }>
+  icon: React.ComponentType<{ className?: string }>
+  badge?: number
 }
 
 const mainNav: NavItemType[] = [
   { label: 'Dashboard', icon: LayoutDashboard, href: '/' },
   { label: 'Cards', icon: CreditCard, href: '/cards' },
   { label: 'Budgets', icon: Clock, href: '/budgets' },
-  { label: 'Transactions', icon: List, href: '/transactions' },
+  { label: 'Transactions', icon: List, href: '/transactions', badge: 3 },
 ]
 
 const insightsNav: NavItemType[] = [
@@ -42,7 +42,7 @@ const insightsNav: NavItemType[] = [
 
 const setupNav: NavItemType[] = [
   { label: 'Family', icon: Users, href: '/family' },
-  { label: 'Shortcut Helper', iconComponent: Smartphone, href: '/setup' },
+  { label: 'Shortcut Helper', icon: Smartphone, href: '/setup' },
 ]
 
 export function Sidebar() {
@@ -57,7 +57,7 @@ export function Sidebar() {
 
   const NavItem = ({ item }: { item: NavItemType }) => {
     const isActive = pathname === item.href
-    const Icon = item.iconComponent || item.icon
+    const Icon = item.icon
     
     return (
       <Link 
@@ -67,9 +67,9 @@ export function Sidebar() {
           isActive && "active"
         )}
       >
-        {Icon && <Icon className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />}
+        <Icon className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
         {item.label}
-        {item.label === 'Transactions' && <span className="nav-badge">3</span>}
+        {item.badge && <span className="nav-badge">{item.badge}</span>}
       </Link>
     )
   }
@@ -96,11 +96,11 @@ export function Sidebar() {
           href="/settings"
           className={cn("nav-item", pathname === '/settings' && "active")}
         >
-          <Settings />
+          <Settings className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
           Settings
         </Link>
         <div className="nav-item" style={{ color: 'var(--red)' }} onClick={handleSignOut}>
-          <LogOut />
+          <LogOut className="w-[15px] h-[15px] flex-shrink-0 opacity-80" />
           Sign Out
         </div>
       </div>
