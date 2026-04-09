@@ -3,6 +3,12 @@ export type TransactionType = 'debit' | 'credit' | 'refund' | 'fee' | 'interest'
 export type TransactionSource = 'shortcut' | 'sms' | 'manual' | 'import'
 export type UserRole = 'owner' | 'admin' | 'member' | 'viewer'
 
+export interface User {
+  id: string
+  email: string
+  created_at: string
+}
+
 export interface CreditCard {
   id: string
   user_id: string
