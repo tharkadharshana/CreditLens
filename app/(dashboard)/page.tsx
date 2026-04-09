@@ -1,9 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { Transaction, CreditCard, Profile } from '@/types'
+import { Transaction, CreditCard } from '@/types'
 import { CATEGORY_CONFIG } from '@/lib/utils/categories'
-import { Badge } from '@/components/ui-creditlens/badge'
 import Link from 'next/link'
-import { History, PieChart as ChartIcon, BarChart3, Activity, TrendingUp, ShieldCheck, Calendar } from 'lucide-react'
+import { BarChart3, TrendingUp, ShieldCheck, Calendar } from 'lucide-react'
 import { SpendingChart } from '@/components/spending-chart'
 import { StatCard } from '@/components/stat-card'
 
@@ -14,13 +13,11 @@ export default async function DashboardPage() {
   
   const { data: { user } } = await supabase.auth.getUser()
   
-  const [profileRes, cardsRes, txRes] = await Promise.all([
-    supabase.from('profiles').select('*').eq('id', user?.id).single(),
+  const [cardsRes, txRes] = await Promise.all([
     supabase.from('credit_cards').select('*').eq('user_id', user?.id),
     supabase.from('transactions').select('*').eq('user_id', user?.id).order('tx_date', { ascending: false }).limit(100)
   ])
 
-  const profile = profileRes.data as Profile
   const cards = cardsRes.data as CreditCard[]
   const allTransactions = txRes.data as Transaction[]
   const recentTransactions = allTransactions?.slice(0, 6) || []
@@ -133,8 +130,8 @@ export default async function DashboardPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentTransactions?.map((tx: any) => {
-                    const cat = CATEGORY_CONFIG[tx.category] || CATEGORY_CONFIG.other
+                  {recentTransactions?.map((tx) => {
+                    const cat = CATEGORY_CONFIG[tx.category as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.other
                     const card = cards?.find(c => c.id === tx.card_id)
                     return (
                       <tr key={tx.id}>
@@ -181,7 +178,7 @@ export default async function DashboardPage() {
             </div>
             <div className="card-body p-0">
               <div className="flex flex-col divide-y divide-border">
-                {cards?.map((card: any) => {
+                {cards?.map((card) => {
                   const pct = Math.round(((card.current_balance || 0) / card.credit_limit) * 100)
                   return (
                     <div key={card.id} className="p-4 flex items-center gap-4 hover:bg-bg3 transition-all">

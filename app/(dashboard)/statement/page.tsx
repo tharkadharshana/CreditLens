@@ -1,6 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { CATEGORY_CONFIG } from '@/lib/utils/categories'
-import { Button } from '@/components/ui-creditlens/button'
 import { FileText, Download, TrendingDown, CreditCard, ChevronLeft, ChevronRight } from 'lucide-react'
 import { SpendingChart } from '@/components/spending-chart'
 

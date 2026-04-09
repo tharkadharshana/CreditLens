@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { CATEGORY_CONFIG } from '@/lib/utils/categories'
-import { Badge } from '@/components/ui-creditlens/badge'
-import { Activity, Clock, Zap, Smartphone } from 'lucide-react'
+import { Activity, Clock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'
@@ -45,8 +44,8 @@ export default async function LiveFeedPage() {
         </div>
         <div className="card-body p-0">
           <div className="flex flex-col">
-            {(transactions as any)?.map((tx: any, i: number) => {
-              const cat = CATEGORY_CONFIG[tx.category] || CATEGORY_CONFIG.other
+            {transactions?.map((tx, i) => {
+              const cat = CATEGORY_CONFIG[tx.category as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.other
               const isNew = i < 2
               
               return (

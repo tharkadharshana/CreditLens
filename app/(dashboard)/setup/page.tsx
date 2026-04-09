@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui-creditlens/button'
-import { Input } from '@/components/ui-creditlens/form'
+import { cn } from '@/lib/utils'
 import { 
   Copy, 
   Check, 

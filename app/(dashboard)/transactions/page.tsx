@@ -1,9 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Transaction } from '@/types'
 import { CATEGORY_CONFIG } from '@/lib/utils/categories'
-import { Button } from '@/components/ui-creditlens/button'
-import { Badge } from '@/components/ui-creditlens/badge'
-import { Input, Select } from '@/components/ui-creditlens/form'
 import { Plus, Download, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -77,8 +74,8 @@ export default async function TransactionsPage() {
               </tr>
             </thead>
             <tbody>
-              {transactions?.map((tx: any) => {
-                const cat = CATEGORY_CONFIG[tx.category] || CATEGORY_CONFIG.other
+              {transactions?.map((tx) => {
+                const cat = CATEGORY_CONFIG[tx.category as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.other
                 return (
                   <tr key={tx.id}>
                     <td className="text-muted fs12">

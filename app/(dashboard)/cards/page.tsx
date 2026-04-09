@@ -1,7 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
 import { CreditCard } from '@/types'
-import { Button } from '@/components/ui-creditlens/button'
-import { CreditCardVis } from '@/components/ui-creditlens/credit-card-vis'
 import { Plus } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
@@ -23,10 +21,10 @@ export default async function CardsPage() {
           <div className="page-title">My Cards</div>
           <div className="page-sub">Manage all your credit cards in one place</div>
         </div>
-        <Button variant="primary">
+        <button className="btn btn-primary">
           <Plus className="w-3.5 h-3.5" />
           Add New Card
-        </Button>
+        </button>
       </div>
 
       <div className="cards-grid">
@@ -104,8 +102,8 @@ export default async function CardsPage() {
                   </div>
                 </div>
                 <div className="flex gap-2 mt-2">
-                  <Button className="flex-1 justify-center">Manage</Button>
-                  <Button className="flex-1 justify-center">Statement</Button>
+                  <button className="btn flex-1 justify-center">Manage</button>
+                  <button className="btn flex-1 justify-center">Statement</button>
                 </div>
               </div>
             </div>

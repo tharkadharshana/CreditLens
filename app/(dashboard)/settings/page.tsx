@@ -1,6 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { Button } from '@/components/ui-creditlens/button'
-import { Input, Select } from '@/components/ui-creditlens/form'
 import { 
   User, 
   Shield, 
@@ -11,7 +9,6 @@ import {
   LogOut,
   ChevronRight
 } from 'lucide-react'
-import { Badge } from '@/components/ui-creditlens/badge'
 
 export const dynamic = 'force-dynamic'
 

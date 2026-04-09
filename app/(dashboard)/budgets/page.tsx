@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Budget, Transaction, CreditCard } from '@/types'
 import { CATEGORY_CONFIG } from '@/lib/utils/categories'
-import { Button } from '@/components/ui-creditlens/button'
 import { Plus, Target, Wallet, AlertCircle } from 'lucide-react'
-import { StatCard } from '@/components/summary-cards'
 
 export const dynamic = 'force-dynamic'
 
@@ -58,10 +56,10 @@ export default async function BudgetsPage() {
           <div className="page-title">Budgets</div>
           <div className="page-sub">Monitor and control your category-wise spending</div>
         </div>
-        <Button variant="primary">
+        <button className="btn btn-primary">
           <Plus className="w-3.5 h-3.5" />
           Add Budget
-        </Button>
+        </button>
       </div>
 
       <div className="stat-grid">
@@ -75,7 +73,7 @@ export default async function BudgetsPage() {
           <div className="stat-value">{formatLKR(totalSpent)}</div>
           <div className="stat-meta">Current month spending</div>
         </div>
-        <div className="stat-card" style={{ '--card-glow': remaining >= 0 ? 'var(--green-bg)' : 'var(--red-bg)' } as any}>
+        <div className="stat-card" style={{ '--card-glow': remaining >= 0 ? 'var(--green-bg)' : 'var(--red-bg)' } as React.CSSProperties}>
           <div className="stat-label">Remaining <AlertCircle className="w-3 h-3" /></div>
           <div className="stat-value" style={{ color: remaining >= 0 ? 'var(--green)' : 'var(--red)' }}>{formatLKR(remaining)}</div>
           <div className="stat-meta">{remaining >= 0 ? "Budget health is good" : "Over budget!"}</div>

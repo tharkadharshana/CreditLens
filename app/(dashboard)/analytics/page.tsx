@@ -1,9 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Transaction, CreditCard } from '@/types'
-import { Button } from '@/components/ui-creditlens/button'
 import { PieChart as ChartIcon, TrendingUp, Calendar, Filter } from 'lucide-react'
 import { SpendingChart } from '@/components/spending-chart'
-import { Select } from '@/components/ui-creditlens/form'
 
 export const dynamic = 'force-dynamic'
 

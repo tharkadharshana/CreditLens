@@ -32,7 +32,7 @@ export function SpendingChart({ data }: SpendingChartProps) {
     <div className="donut-wrap">
       <div style={{ position: 'relative', width: '120px', height: '120px' }}>
         <svg viewBox="0 0 36 36" style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
-          {segments.map((seg, i) => {
+          {segments.map((seg) => {
             const strokeDasharray = `${seg.pct} 100`
             const strokeDashoffset = -currentPct
             currentPct += seg.pct

@@ -1,8 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Profile, Household } from '@/types'
-import { Button } from '@/components/ui-creditlens/button'
 import { Users, UserPlus, MoreVertical, Shield, Activity } from 'lucide-react'
-import { Badge } from '@/components/ui-creditlens/badge'
 import { cn } from '@/lib/utils'
 
 export const dynamic = 'force-dynamic'

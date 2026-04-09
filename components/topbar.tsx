@@ -1,8 +1,8 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Plus, Smartphone } from 'lucide-react'
-import { Button } from '@/components/ui-creditlens/button'
+import Link from 'next/link'
+import { Plus } from 'lucide-react'
 
 const BREADCRUMBS: Record<string, string> = {
   '/': 'Dashboard',
