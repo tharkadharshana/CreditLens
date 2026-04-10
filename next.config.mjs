@@ -1,11 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/ssr', '@supabase/supabase-js'],
   },
-  typescript: {
-    ignoreBuildErrors: true,
+  generateBuildId: async () => {
+    return `build-${Date.now()}`;
   },
-}
+};
 
-export default nextConfig
+export default nextConfig;
