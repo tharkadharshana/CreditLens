@@ -2,7 +2,7 @@
 
 import { Transaction, CreditCard, Profile } from '@/types'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardDescription } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import Link from 'next/link'
 import { Plus, CreditCard as CardIcon, Smartphone, History, PieChart as ChartIcon } from 'lucide-react'
 import { SummaryCards } from '@/components/summary-cards'
@@ -126,7 +126,7 @@ export function DashboardPageClient({ profile, cards, allTransactions }: Dashboa
                           <p className="text-sm font-medium text-white">{card.card_name}</p>
                           <p className="text-xs text-[#94a3b8]">**** {card.last_four}</p>
                         </div>
-                        <p className="text-xs font-semibold text-indigo-400">{card.card_type === 'credit' ? 'Credit' : 'Debit'}</p>
+                        <p className="text-xs font-semibold text-indigo-400">{card.card_network?.toUpperCase()}</p>
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between text-xs">
@@ -158,7 +158,7 @@ export function DashboardPageClient({ profile, cards, allTransactions }: Dashboa
               <ChartIcon className="w-5 h-5 text-indigo-500" />
               Spending Trend
             </h3>
-            <SpendingChart transactions={allTransactions} />
+            <SpendingChart data={allTransactions} />
           </div>
         </div>
       </div>
