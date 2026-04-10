@@ -59,14 +59,14 @@ export async function middleware(request: NextRequest) {
   // Logged in + trying to access auth pages → go to dashboard
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/cards'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
   // Logged in + hitting "/" → go to dashboard
   if (user && pathname === '/') {
     const url = request.nextUrl.clone()
-    url.pathname = '/cards'
+    url.pathname = '/dashboard'
     return NextResponse.redirect(url)
   }
 
