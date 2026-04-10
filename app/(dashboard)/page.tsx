@@ -2,8 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { Transaction, CreditCard, Profile } from '@/types'
 import { DashboardPageClient } from '@/components/dashboard/DashboardPageClient'
 
-export const dynamic = 'force-dynamic'
-
 export default async function DashboardPage() {
   const supabase = createClient()
   
